@@ -1,0 +1,108 @@
+{
+  "generated_at": "2026-06-29T01:53:41.135789+00:00",
+  "mode": "offline",
+  "langsmith_run_id": null,
+  "langsmith_active": false,
+  "policymind": {
+    "ragas": {
+      "engine": "offline-heuristic",
+      "faithfulness": 0.8217113442113442,
+      "answer_relevancy": 1.0,
+      "context_precision": 0.8400000000000001,
+      "n": 20
+    },
+    "hallucination": {
+      "engine": "offline-heuristic",
+      "hallucination": 0.1607886557886558,
+      "n": 20
+    },
+    "n_cases": 20
+  },
+  "flowagent": {
+    "task_completion": {
+      "engine": "rule",
+      "task_completion": 1.0,
+      "n": 10
+    },
+    "results": [
+      {
+        "vendor_name": "Acme Supplies Inc.",
+        "task": "All required docs present \u2014 should produce green risk and a complete memo.",
+        "expected_risk": "green",
+        "actual_risk": "green",
+        "memo": "Vendor Acme Supplies Inc. assessed as green. Missing: none."
+      },
+      {
+        "vendor_name": "Borderline Logistics",
+        "task": "One doc missing (WSIB) \u2014 should produce yellow and flag the missing doc.",
+        "expected_risk": "yellow",
+        "actual_risk": "yellow",
+        "memo": "Vendor Borderline Logistics assessed as yellow. Missing: ['WSIB Clearance']."
+      },
+      {
+        "vendor_name": "Risky Vendor Co.",
+        "task": "Multiple docs missing \u2014 should produce red and list all missing items.",
+        "expected_risk": "red",
+        "actual_risk": "red",
+        "memo": "Vendor Risky Vendor Co. assessed as red. Missing: ['Certificate of Insurance', 'Signed MSA', 'WSIB Clearance']."
+      },
+      {
+        "vendor_name": "Fresh Start Trading",
+        "task": "No docs submitted \u2014 should produce red and recommend not proceeding.",
+        "expected_risk": "red",
+        "actual_risk": "red",
+        "memo": "Vendor Fresh Start Trading assessed as red. Missing: ['Certificate of Insurance', 'GST/HST Registration', 'Signed MSA', 'WSIB Clearance']."
+      },
+      {
+        "vendor_name": "Reliable Parts Ltd.",
+        "task": "Missing Signed MSA \u2014 should produce yellow and flag the missing agreement.",
+        "expected_risk": "yellow",
+        "actual_risk": "yellow",
+        "memo": "Vendor Reliable Parts Ltd. assessed as yellow. Missing: ['Signed MSA']."
+      },
+      {
+        "vendor_name": "FullyCompliant Mfg.",
+        "task": "All docs present in different order \u2014 should still produce green.",
+        "expected_risk": "green",
+        "actual_risk": "green",
+        "memo": "Vendor FullyCompliant Mfg. assessed as green. Missing: none."
+      },
+      {
+        "vendor_name": "Almost There Inc.",
+        "task": "Two docs missing \u2014 should produce red risk.",
+        "expected_risk": "red",
+        "actual_risk": "red",
+        "memo": "Vendor Almost There Inc. assessed as red. Missing: ['GST/HST Registration', 'Signed MSA']."
+      },
+      {
+        "vendor_name": "Docs Only Vendor",
+        "task": "Missing Certificate of Insurance \u2014 should produce yellow.",
+        "expected_risk": "yellow",
+        "actual_risk": "yellow",
+        "memo": "Vendor Docs Only Vendor assessed as yellow. Missing: ['Certificate of Insurance']."
+      },
+      {
+        "vendor_name": "Late Submitter LLC",
+        "task": "Missing GST/HST Registration \u2014 should produce yellow.",
+        "expected_risk": "yellow",
+        "actual_risk": "yellow",
+        "memo": "Vendor Late Submitter LLC assessed as yellow. Missing: ['GST/HST Registration']."
+      },
+      {
+        "vendor_name": "Zero Docs Corp.",
+        "task": "No required docs in submission \u2014 should produce red.",
+        "expected_risk": "red",
+        "actual_risk": "red",
+        "memo": "Vendor Zero Docs Corp. assessed as red. Missing: ['Certificate of Insurance', 'GST/HST Registration', 'Signed MSA', 'WSIB Clearance']."
+      }
+    ],
+    "n_cases": 10
+  },
+  "thresholds": {
+    "min_faithfulness": 0.7,
+    "min_answer_relevancy": 0.7,
+    "min_context_precision": 0.6,
+    "max_hallucination": 0.3,
+    "min_task_completion": 0.7
+  }
+}
