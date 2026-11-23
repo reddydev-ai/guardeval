@@ -67,7 +67,7 @@ fs.mkdirSync(outDir, { recursive: true });
         };
       });
       assert.equal(audit.language, 'en');
-      assert.match(audit.headingText, /Design accountable AI.*Show the evidence/s);
+      assert.match(audit.headingText, /(?:Build useful AI.*Prove what works|Design accountable AI.*Show the evidence)/s, 'Published page has an unexpected hero');
       assert.equal(audit.cards.length, 3);
       assert.deepEqual(audit.cards.map(c => c.title), ['PolicyMind','FlowAgent','GuardEval']);
       assert.equal(audit.localAnchorsValid, true);
@@ -87,10 +87,18 @@ fs.mkdirSync(outDir, { recursive: true });
       await page.screenshot({ path: path.join(outDir, label + '.png'), fullPage: true });
       const local = await browser.newPage({ viewport: { width, height } });
       await local.goto(localUrl, { waitUntil: 'load' });
+      const sourceHero = await local.locator('h1').innerText();
+      assert.match(sourceHero.replace(/\s+/g, ' '), /Design accountable AI.*Show the evidence/s, 'Checked-in hero is missing');
+      assert.equal(await local.locator('.evidence-table tbody tr').count(), 5, 'Evidence gate table must have five specific rows');
+      assert.equal(await local.locator('a[href="https://arxiv.org/abs/2601.03273"]').count(), 1, 'Disambiguation source missing');
+      assert.equal(await local.locator('#approach article').count(), 4, 'Product decision cards missing');
+      const localWidth = await local.evaluate(() => document.documentElement.scrollWidth);
+      assert.ok(localWidth <= width + 1, 'Source HTML has horizontal overflow');
       const sourceNames = await local.locator('article.project h3').allTextContents();
       assert.deepEqual(sourceNames.map(s => s.trim()), audit.cards.map(c => c.title),
                        'Published card titles differ from checked-in source');
       reports.push({ viewport: label, url: liveUrl, http: 200, verdict: 'pass',
+                     sourceHeroMatchesDeployed: audit.headingText === sourceHero.replace(/\s+/g, ''),
                      screenshot: label + '.png', ...audit });
       await local.close();
       await page.close();
