@@ -42,6 +42,8 @@ def test_static_page_structure_and_links():
             assert parsed.scheme == "https"
             assert parsed.netloc in {"github.com", "arxiv.org"}
             assert (parsed.netloc == "github.com" and (parsed.path == "/reddydev-ai" or parsed.path.startswith("/reddydev-ai/"))) or (parsed.netloc == "arxiv.org" and parsed.path == "/abs/2601.03273"), f"Unexpected external link: {href}"
+    assert "INTERVIEW_WALKTHROUGH" not in text, "Interview-preparation content is not homepage navigation"
+    assert "Seven-minute interview walkthrough" not in text
     assert "independent" in text.lower()
     assert "synthetic" in text.lower()
     assert "not" in text.lower() and "production" in text.lower()
