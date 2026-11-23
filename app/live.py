@@ -64,7 +64,7 @@ def verify_evidence(body: dict, case: dict, *, require_llm: bool) -> dict:
     top = contexts[0]
     if top["source"] != SOURCE_FILENAME or top["page"] != case["page"]:
         raise AssertionError(f"Unexpected top retrieved context for case {case['id']}")
-    normalize = lambda text: re.sub(r"\\s+", " ", text).strip().casefold()
+    normalize = lambda text: re.sub(r"\s+", " ", text).strip().casefold()
     if normalize(case["reference"]) not in normalize(top["text"]):
         raise AssertionError(f"Reference is absent from retrieved evidence for {case['id']}")
 
