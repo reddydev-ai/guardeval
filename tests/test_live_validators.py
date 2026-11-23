@@ -61,3 +61,11 @@ def test_service_endpoints_are_local_by_default(monkeypatch, unsafe):
     monkeypatch.delenv("ALLOW_REMOTE_EVAL", raising=False)
     with pytest.raises(RuntimeError):
         _service_url("POLICYMIND_URL")
+
+
+def test_pdf_line_wrapping_does_not_hide_correct_evidence():
+    body, case = example()
+    body["retrieved_contexts"][0]["text"] = "Mistral reimburses 42\nCAD per day"
+    body["answer"]["answer"] = "Reimbursement: 42\nCAD."
+    out = verify_evidence(body, case, require_llm=False)
+    assert out["reference_in_answer"]
