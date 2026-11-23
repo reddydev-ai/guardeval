@@ -1,9 +1,9 @@
 # GuardEval — LLM Evaluation & Guardrails Layer
 
-GuardEval tests **PolicyMind** and **FlowAgent** before every release. It measures
+GuardEval is a portfolio evaluation harness for **PolicyMind** and **FlowAgent**. Its current GitHub Actions workflow executes **synthetic/offline smoke checks only**; it does NOT test or certify the live services before release. It measures
 **faithfulness, answer relevancy, context precision, hallucination risk**, and
 **task completion**, and ships a **pytest regression suite** that acts as a CI
-quality gate plus a **Streamlit dashboard** for visual review.
+quality gate plus a **Streamlit dashboard** for exploratory visual review.
 
 This is the project that signals production maturity: most candidates build a RAG
 demo; few build the evaluation layer that proves the demo is reliable.
@@ -40,6 +40,10 @@ datasets.py  (20 PolicyMind Q&A + 10 FlowAgent scenarios, gold answers)
 > such as `engine: llm-judge`, so the harness always runs and results are never
 > silently wrong.
 
+## Evaluation integrity (important)
+
+The offline runner synthesizes answers from reference data. Its scores **do not measure actual model quality** and must not be used as release evidence or presented as validated production metrics. Although API clients are implemented, **live release gating is intentionally disabled** until real retrieval contexts are captured safely from PolicyMind and an authorized evaluation environment is provisioned. Configuring only one service URL now fails explicitly. Judge errors no longer return an invented passing score. Current CI verifies smoke-test mechanics only; full end-to-end evaluation, secrets provisioning, and safety review remain pending.
+
 ## Setup
 
 ```bash
@@ -58,11 +62,11 @@ streamlit run dashboard.py
 pytest -v
 ```
 
-### Evaluate the live services
+### Live evaluation (not yet enabled)
 ```bash
 export POLICYMIND_URL=http://localhost:8000
 export FLOWAGENT_URL=http://localhost:8001
-pytest -v          # now scores real outputs and enforces thresholds
+pytest -v          # currently FAILS CLOSED until real retrieved contexts are available
 ```
 
 ### Optional: LangSmith tracing
