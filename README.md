@@ -1,5 +1,7 @@
 # GuardEval — Verifiable RAG and Agent Workflow Evaluation
 
+**[Explore the published AI Automation Product Management portfolio](https://reddydev-ai.github.io/guardeval/)** · [Portfolio narrative](PORTFOLIO.md) · [Verification workflows](https://github.com/reddydev-ai/guardeval/actions)
+
 > **AI product management perspective:** Treat evaluation as a release decision, not just a dashboard of attractive scores. [Explore the full portfolio](PORTFOLIO.md) · [Product case study](docs/PRODUCT_CASE_STUDY.md) · [Seven-minute interview walkthrough](docs/INTERVIEW_WALKTHROUGH.md)
 
 **What this shows:** independently running PolicyMind and FlowAgent APIs in CI using a disposable synthetic corpus. Five RAG cases and six agent workflow cases test retrieval, citations, authorization and approval integrity; 30 additional *draft, unreviewed* cases define future coverage. **These are not measures of generalized LLM accuracy or employer business impact.**
