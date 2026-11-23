@@ -83,3 +83,21 @@ def test_llm_output_cannot_pass_no_key_smoke_mode():
     body["generation_mode"] = "llm"
     with pytest.raises(AssertionError, match="Smoke mode"):
         verify_evidence(body, case, require_llm=False)
+
+
+def test_remote_https_requires_explicit_hostname_allowlist(monkeypatch):
+    monkeypatch.setenv("POLICYMIND_URL", "https://evaluation.example.com")
+    monkeypatch.setenv("ALLOW_REMOTE_EVAL", "true")
+    monkeypatch.delenv("EVAL_ALLOWED_HOSTS", raising=False)
+    with pytest.raises(RuntimeError, match="allowlist"):
+        _service_url("POLICYMIND_URL")
+    monkeypatch.setenv("EVAL_ALLOWED_HOSTS", "other.example.com,evaluation.example.com")
+    assert _service_url("POLICYMIND_URL") == "https://evaluation.example.com"
+
+
+def test_remote_evaluation_rejects_http_even_when_allowlisted(monkeypatch):
+    monkeypatch.setenv("POLICYMIND_URL", "http://evaluation.example.com")
+    monkeypatch.setenv("ALLOW_REMOTE_EVAL", "true")
+    monkeypatch.setenv("EVAL_ALLOWED_HOSTS", "evaluation.example.com")
+    with pytest.raises(RuntimeError, match="HTTPS"):
+        _service_url("POLICYMIND_URL")
