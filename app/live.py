@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -63,7 +64,8 @@ def verify_evidence(body: dict, case: dict, *, require_llm: bool) -> dict:
     top = contexts[0]
     if top["source"] != SOURCE_FILENAME or top["page"] != case["page"]:
         raise AssertionError(f"Unexpected top retrieved context for case {case['id']}")
-    if case["reference"].lower() not in top["text"].lower():
+    normalize = lambda text: re.sub(r"\\s+", " ", text).strip().casefold()
+    if normalize(case["reference"]) not in normalize(top["text"]):
         raise AssertionError(f"Reference is absent from retrieved evidence for {case['id']}")
 
     citations = answer.get("citations")
@@ -76,7 +78,7 @@ def verify_evidence(body: dict, case: dict, *, require_llm: bool) -> dict:
     # Lightweight exact-answer assertion for synthetic corpus. Judge-based
     # quality scoring is independently required in LLM quality mode.
     response_text = answer["answer"]
-    exact_answer = case["reference"].lower() in response_text.lower()
+    exact_answer = normalize(case["reference"]) in normalize(response_text)
     if not exact_answer and not require_llm:
         raise AssertionError(f"Extractive demo did not return expected reference: {case['id']}")
 
