@@ -18,7 +18,7 @@ from urllib.parse import urlsplit
 
 import httpx
 
-from .live_fixtures import FLOW_CASES, RAG_CASES, SOURCE_FILENAME
+from .live_fixtures import FLOW_CASES, RAG_CASES, SOURCE_FILENAME, REQUIRED_DOCUMENTS
 
 
 def _service_url(name: str) -> str:
@@ -150,23 +150,52 @@ def run_live() -> dict:
             )
             rag_results.append(verify_evidence(body, case, require_llm=require_llm))
 
+        denied_start = client.post(
+            flow_url + "/verify", headers={"X-API-Key": "intentionally-incorrect"},
+            json={"vendor_name": "Synthetic Unauthorized Request", "submitted_docs": []},
+        )
+        if denied_start.status_code != 401:
+            raise AssertionError("FlowAgent accepted an unauthorized start")
+
         flow_results = []
         for case in FLOW_CASES:
             started = _request(client, "POST", flow_url + "/verify", headers=flow_headers,
                                json={"vendor_name": case["vendor_name"], "submitted_docs": case["submitted_docs"]})
             if started.get("status") != "awaiting_approval" or not started.get("thread_id"):
                 raise AssertionError("FlowAgent did not pause for approval")
-            if started.get("approval_request", {}).get("risk_level") != case["expected_risk"]:
+            request_risk = started.get("approval_request", {})
+            if request_risk.get("risk_level") != case["expected_risk"]:
                 raise AssertionError(f"Incorrect pre-approval risk: {case['id']}")
+            expected_missing = set(REQUIRED_DOCUMENTS) - set(case["submitted_docs"])
+            if set(request_risk.get("missing_docs") or []) != expected_missing:
+                raise AssertionError(f"Incorrect missing-document evidence: {case['id']}")
+            payload = {"thread_id": started["thread_id"], "decision": case["decision"],
+                       "comment": "synthetic evaluation"}
+            reviewer_denied = client.post(
+                flow_url + "/verify/resume", headers={**flow_headers, "X-Reviewer-Key": "intentionally-incorrect"},
+                json=payload,
+            )
+            if reviewer_denied.status_code != 403:
+                raise AssertionError("FlowAgent accepted an unauthorized reviewer")
             finished = _request(
                 client, "POST", flow_url + "/verify/resume", headers=approval_headers,
-                json={"thread_id": started["thread_id"], "decision": case["decision"], "comment": "synthetic evaluation"},
+                json=payload,
             )
             if finished.get("status") != "done" or finished.get("decision") != case["decision"]:
                 raise AssertionError(f"Reviewer decision was not preserved: {case['id']}")
             if finished.get("risk_level") != case["expected_risk"] or not finished.get("memo"):
                 raise AssertionError(f"Incorrect final risk or missing memo: {case['id']}")
-            flow_results.append({"case_id": case["id"], "risk_matches": True, "approval_preserved": True})
+            if set(finished.get("missing_docs") or []) != expected_missing:
+                raise AssertionError(f"Final missing documents do not match: {case['id']}")
+            replay = client.post(
+                flow_url + "/verify/resume", headers=approval_headers, json=payload,
+            )
+            if replay.status_code != 409:
+                raise AssertionError("FlowAgent permitted an approval replay")
+            flow_results.append({
+                "case_id": case["id"], "risk_matches": True, "approval_preserved": True,
+                "missing_documents_match": True, "replay_rejected": True,
+            })
 
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -184,6 +213,8 @@ def run_live() -> dict:
             "n_cases": len(flow_results),
             "risk_accuracy": sum(x["risk_matches"] for x in flow_results) / len(flow_results),
             "approval_integrity": sum(x["approval_preserved"] for x in flow_results) / len(flow_results),
+            "missing_documents_match_rate": sum(x["missing_documents_match"] for x in flow_results) / len(flow_results),
+            "replay_rejection_rate": sum(x["replay_rejected"] for x in flow_results) / len(flow_results),
             "case_ids": [x["case_id"] for x in flow_results],
         },
         "release_quality_certified": False,
