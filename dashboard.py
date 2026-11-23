@@ -23,8 +23,7 @@ if not report:
 
 st.markdown(f"**Mode:** `{report['mode']}`  ·  **Generated:** {report['generated_at']}")
 if report["mode"] == "offline":
-    st.warning("OFFLINE mode: outputs are simulated from gold data. Set POLICYMIND_URL / "
-               "FLOWAGENT_URL to evaluate the live services.")
+    st.error("SYNTHETIC SMOKE DATA ONLY — these scores are not real model quality measurements, and do not certify a release. Live release gating is disabled until real retrieval contexts can be evaluated securely.")
 
 th = report["thresholds"]
 
@@ -32,6 +31,9 @@ th = report["thresholds"]
 def metric_row(label, value, threshold, higher_is_better=True):
     if value is None:
         st.metric(label, "n/a")
+        return
+    if report["mode"] != "live":
+        st.metric(label, f"{value:.2f}", delta="synthetic — not validated")
         return
     ok = value >= threshold if higher_is_better else value <= threshold
     st.metric(label, f"{value:.2f}", delta=f"{'✅ pass' if ok else '❌ fail'} (thr {threshold})")
