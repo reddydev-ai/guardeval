@@ -58,8 +58,8 @@ fs.mkdirSync(outDir, { recursive: true });
           projectsGridColumns: getComputedStyle(grid).gridTemplateColumns,
           localAnchorsValid: links.filter(h => h && h.startsWith('#'))
             .every(h => document.getElementById(h.slice(1)) !== null),
-          githubOnlyOutbound: links.filter(h => h && /^https?:/.test(h))
-            .every(h => new URL(h).hostname === 'github.com'),
+          trustedOutbound: links.filter(h => h && /^https?:/.test(h))
+            .every(h => { const u = new URL(h); return u.hostname === "github.com" || (u.hostname === "arxiv.org" && u.pathname === "/abs/2601.03273"); }),
           hasMissingImage: [...document.images].some(img => !img.complete || img.naturalWidth === 0),
           visibleSections: ['projects','verification','approach','limits']
             .every(id => document.getElementById(id) !== null),
@@ -67,11 +67,11 @@ fs.mkdirSync(outDir, { recursive: true });
         };
       });
       assert.equal(audit.language, 'en');
-      assert.match(audit.headingText, /Build useful AI.*Prove what works/s);
+      assert.match(audit.headingText, /Design accountable AI.*Show the evidence/s);
       assert.equal(audit.cards.length, 3);
       assert.deepEqual(audit.cards.map(c => c.title), ['PolicyMind','FlowAgent','GuardEval']);
       assert.equal(audit.localAnchorsValid, true);
-      assert.equal(audit.githubOnlyOutbound, true);
+      assert.equal(audit.trustedOutbound, true);
       assert.equal(audit.visibleSections, true);
       assert.equal(audit.hasMissingImage, false);
       assert.ok(audit.renderedTextLength > 1000, 'Content is unexpectedly empty');
