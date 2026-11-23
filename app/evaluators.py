@@ -152,9 +152,11 @@ def _llm_rag_metrics(samples: list[dict]) -> dict:
     }
 
 
-def _ragas_metrics(samples: list[dict]) -> dict | None:
-    """Optional RAGAS engine. Returns None if RAGAS / deps / keys aren't available."""
+def _ragas_metrics(samples: list[dict], *, strict: bool = False) -> dict | None:
+    """RAGAS metrics; strict mode never substitutes another scoring engine."""
     if not settings.openai_api_key:
+        if strict:
+            raise RuntimeError("RAGAS model-quality mode requires an authorized judge API key")
         return None
     try:
         from ragas import evaluate, EvaluationDataset
@@ -189,8 +191,20 @@ def _ragas_metrics(samples: list[dict]) -> dict | None:
             "context_precision": float(df.filter(like="context_precision").mean(axis=1).mean()),
             "n": len(samples),
         }
-    except Exception:
+    except Exception as exc:
+        if strict:
+            raise RuntimeError("Real RAGAS evaluation failed; no fallback score was generated") from exc
         return None
+
+
+def run_ragas_strict(samples: list[dict]) -> dict:
+    """Run the real RAGAS evaluator or raise; requires actual model credentials."""
+    if not samples:
+        raise ValueError("Cannot evaluate an empty set of model responses")
+    result = _ragas_metrics(samples, strict=True)
+    if result is None or result.get("engine") != "ragas":
+        raise RuntimeError("Strict RAGAS evaluation did not return verified RAGAS scores")
+    return result
 
 
 def run_rag_metrics(samples: list[dict], prefer_ragas: bool = False) -> dict:
