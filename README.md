@@ -1,5 +1,8 @@
 # GuardEval — Verifiable RAG and Agent Workflow Evaluation
 
+> **For AI Product Management interviews:** [7-minute product walkthrough](docs/INTERVIEW_WALKTHROUGH.md) · [Security and zero-cost deployment decision](docs/SECURITY_AND_DEPLOYMENT_DECISION.md). These documents clearly distinguish tested prototypes from unmet production requirements.
+
+
 > **Product-management portfolio brief:** [Problem, users, success metrics, roadmap and limitations](docs/PRODUCT_CASE_STUDY.md). This is an independent prototype; no employer or customer outcome is claimed.
 
 
