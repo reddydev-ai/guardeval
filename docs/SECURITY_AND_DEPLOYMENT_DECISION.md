@@ -48,7 +48,7 @@ A production deployment must satisfy **all**, not just CI:
 Until then, label demos **prototype** and never imply security certification.
 
 ## Static presentation release
-The GitHub README files, product case studies and synthetic evaluation catalogue can be shared publicly because they do not require live credentials or access to proprietary employer documents. **This is the recommended zero-cost recruitment-facing deployment.** GitHub Pages could host a static page later, but GitHub Pages has not been enabled or verified; do not claim a website is live.
+The GitHub README files, product case studies and synthetic evaluation catalogue can be shared publicly because they do not require live credentials or access to proprietary employer documents. **This is the recommended zero-cost recruitment-facing deployment.** The [static portfolio website](https://reddydev-ai.github.io/guardeval/) **is published through GitHub Pages** (see the [deployment record](https://github.com/reddydev-ai/guardeval/actions/runs/45111928442)). The PolicyMind, FlowAgent and GuardEval backend services remain private, and this website publication is **not** an AI-service production release.
 
 ## Evidence standard
 Use only public workflow links and tests for project outcomes. Candidate-provided employer scale and performance figures are separate, and require candidate verification before use in job applications. Never transfer independent repo technologies or CI counts into employer production experience.
