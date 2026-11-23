@@ -4,6 +4,9 @@ These are NOT the RAG model's returned contexts. The integration suite ingests
 this corpus via PolicyMind's actual API and then measures real retrieval.
 """
 SOURCE_FILENAME = "guardeval_test_policy.pdf"
+REQUIRED_DOCUMENTS = (
+    "Certificate of Insurance", "WSIB Clearance", "GST/HST Registration", "Signed MSA",
+)
 PAGES = [
     "SYNTHETIC TEST DATA. Mistral travel policy: daily meal reimbursement ceiling is 42 CAD per travel day with itemized receipts.",
     "SYNTHETIC TEST DATA. Linden home office equipment policy: annual keyboard and monitor reimbursement limit is 375 CAD with manager approval.",
