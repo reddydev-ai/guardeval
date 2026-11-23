@@ -13,7 +13,7 @@ def example():
         "evidence_origin": "same-invocation-retrieval",
         "generation_mode": "extractive-demo",
         "answer": {
-            "answer": "Mistral policy says the ceiling is 42 CAD.",
+            "answer": f"Mistral policy says the ceiling is 42 CAD. [{SOURCE_FILENAME} p.1]",
             "citations": [{"source": SOURCE_FILENAME, "page": 1}],
         },
         "retrieved_contexts": [
@@ -66,6 +66,20 @@ def test_service_endpoints_are_local_by_default(monkeypatch, unsafe):
 def test_pdf_line_wrapping_does_not_hide_correct_evidence():
     body, case = example()
     body["retrieved_contexts"][0]["text"] = "Mistral reimburses 42\nCAD per day"
-    body["answer"]["answer"] = "Reimbursement: 42\nCAD."
+    body["answer"]["answer"] = f"Reimbursement: 42\nCAD. [{SOURCE_FILENAME} p.1]"
     out = verify_evidence(body, case, require_llm=False)
     assert out["reference_in_answer"]
+
+
+def test_inline_citation_is_required_even_with_correct_metadata():
+    body, case = example()
+    body["answer"]["answer"] = "The reimbursement ceiling is 42 CAD."
+    with pytest.raises(AssertionError, match="inline"):
+        verify_evidence(body, case, require_llm=False)
+
+
+def test_llm_output_cannot_pass_no_key_smoke_mode():
+    body, case = example()
+    body["generation_mode"] = "llm"
+    with pytest.raises(AssertionError, match="Smoke mode"):
+        verify_evidence(body, case, require_llm=False)
