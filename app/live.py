@@ -27,8 +27,17 @@ def _service_url(name: str) -> str:
     if not u.scheme or not u.hostname or u.username or u.password or u.query or u.fragment:
         raise RuntimeError(f"{name} must be a valid service base URL without credentials or query")
     local = u.hostname in {"127.0.0.1", "localhost"}
-    if not ((local and u.scheme == "http") or (u.scheme == "https" and os.getenv("ALLOW_REMOTE_EVAL") == "true")):
-        raise RuntimeError(f"{name} must be local HTTP, or an explicitly permitted HTTPS endpoint")
+    if local and u.scheme == "http":
+        return value
+    if u.scheme != "https" or os.getenv("ALLOW_REMOTE_EVAL") != "true":
+        raise RuntimeError(f"{name} must be local HTTP, or explicitly enabled remote HTTPS")
+    allowlist = {
+        host.strip().casefold()
+        for host in os.getenv("EVAL_ALLOWED_HOSTS", "").split(",")
+        if host.strip()
+    }
+    if u.hostname.casefold() not in allowlist:
+        raise RuntimeError(f"{name} host is not on the explicit evaluation allowlist")
     return value
 
 
@@ -116,8 +125,8 @@ def run_live() -> dict:
     eval_key = _secret("POLICYMIND_EVAL_KEY")
     flow_key = _secret("FLOWAGENT_API_KEY")
     reviewer_key = _secret("FLOWAGENT_REVIEWER_KEY")
-    if policy_key == eval_key or flow_key == reviewer_key:
-        raise RuntimeError("Business and evaluation/reviewer credentials must be independent")
+    if len({policy_key, eval_key, flow_key, reviewer_key}) != 4:
+        raise RuntimeError("All four service and reviewer credentials must be independent")
 
     mode_setting = os.getenv("EVAL_REQUIRE_LLM", "false").strip().lower()
     if mode_setting not in {"true", "false"}:
