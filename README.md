@@ -1,10 +1,14 @@
 # GuardEval — Verifiable RAG and Agent Workflow Evaluation
 
-> **For AI Product Management interviews:** [7-minute product walkthrough](docs/INTERVIEW_WALKTHROUGH.md) · [Security and zero-cost deployment decision](docs/SECURITY_AND_DEPLOYMENT_DECISION.md). These documents clearly distinguish tested prototypes from unmet production requirements.
+> **AI product management perspective:** Treat evaluation as a release decision, not just a dashboard of attractive scores. [Explore the full portfolio](PORTFOLIO.md) · [Product case study](docs/PRODUCT_CASE_STUDY.md) · [Seven-minute interview walkthrough](docs/INTERVIEW_WALKTHROUGH.md)
 
+**What this shows:** independently running PolicyMind and FlowAgent APIs in CI using a disposable synthetic corpus. Five RAG cases and six agent workflow cases test retrieval, citations, authorization and approval integrity; 30 additional *draft, unreviewed* cases define future coverage. **These are not measures of generalized LLM accuracy or employer business impact.**
 
-> **Product-management portfolio brief:** [Problem, users, success metrics, roadmap and limitations](docs/PRODUCT_CASE_STUDY.md). This is an independent prototype; no employer or customer outcome is claimed.
-
+| Product question | Decision | Evidence |
+| --- | --- | --- |
+| Does a passing check reflect actual service behavior? | Start real services and inspect returned evidence | [Live-service CI](.github/workflows/live-integration.yml) |
+| Can invalid model scores pass? | Reject incomplete, nonfinite or fallback judge results | [Strict quality tests](tests/test_quality_gate.py) |
+| Is it ready for public user data? | No: record security release blockers and keep APIs private | [Security decision](docs/SECURITY_AND_DEPLOYMENT_DECISION.md) |
 
 GuardEval is an open-source portfolio project for evaluating [PolicyMind](https://github.com/reddydev-ai/policymind) (policy-document RAG) and [FlowAgent](https://github.com/reddydev-ai/flowagent) (human-reviewed vendor verification).
 
@@ -85,6 +89,10 @@ Before attempting it, use the separate model-evaluation environment tested in th
 - The default mode never treats reference contexts as if the service retrieved them.
 - Remote evaluation targets require both `ALLOW_REMOTE_EVAL=true` and an explicit `EVAL_ALLOWED_HOSTS` hostname allowlist, with HTTPS enforced; do not evaluate untrusted URLs.
 - Keep all services private; identity, per-document permissions, audit logs, rate limiting, secret rotation, prompt-injection defense and security review are still required for production.
+
+## Recruiter-friendly portfolio overview
+
+The [portfolio overview](PORTFOLIO.md) is intended as the starting point for AI Automation Product Manager roles. A static one-page design is also available at [docs/index.html](docs/index.html) as *source only*; GitHub Pages has **not** been enabled or published. A [profile README draft](docs/GITHUB_PROFILE_README_READY.md) is prepared for the `reddydev-ai/reddydev-ai` profile repository once that repository exists.
 
 ## Repository organization
 
