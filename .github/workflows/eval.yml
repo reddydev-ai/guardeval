@@ -1,10 +1,13 @@
-name: GuardEval Regression Tests
+name: GuardEval Synthetic Smoke Checks
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+
+permissions:
+  contents: read
 
 jobs:
   test:
@@ -19,6 +22,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -30,6 +35,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest==8.3.4 pydantic==2.13.4 httpx==0.28.1
 
-      - name: Run offline regression tests
+      - name: Run synthetic smoke checks (NOT live quality evidence)
         run: |
           pytest -v

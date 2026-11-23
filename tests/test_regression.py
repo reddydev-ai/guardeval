@@ -22,6 +22,8 @@ def report():
 
 
 def test_faithfulness_above_threshold(report):
+    if report["mode"] != "live":
+        pytest.skip("Offline simulated data is not a release-quality faithfulness gate.")
     score = report["policymind"]["ragas"].get("faithfulness")
     assert score is not None, "faithfulness not computed"
     assert score >= settings.min_faithfulness, (
@@ -30,6 +32,8 @@ def test_faithfulness_above_threshold(report):
 
 
 def test_hallucination_below_threshold(report):
+    if report["mode"] != "live":
+        pytest.skip("Offline simulated data is not a release-quality hallucination gate.")
     score = report["policymind"]["hallucination"].get("hallucination")
     if score is None:
         pytest.skip("hallucination not computed (DeepEval unavailable)")
@@ -39,6 +43,8 @@ def test_hallucination_below_threshold(report):
 
 
 def test_task_completion_above_threshold(report):
+    if report["mode"] != "live":
+        pytest.skip("Offline simulated data is not a release-quality completion gate.")
     score = report["flowagent"]["task_completion"]["task_completion"]
     assert score >= settings.min_task_completion, (
         f"task completion {score:.3f} < {settings.min_task_completion}"
@@ -46,8 +52,17 @@ def test_task_completion_above_threshold(report):
 
 
 def test_flowagent_risk_matches_expected(report):
+    if report["mode"] != "live":
+        pytest.skip("Offline simulated data is not a release-quality risk gate.")
     """Every FlowAgent scenario should produce the expected risk level."""
     mismatches = [
         r for r in report["flowagent"]["results"] if r["actual_risk"] != r["expected_risk"]
     ]
     assert not mismatches, f"risk mismatches: {[(m['vendor_name'], m['actual_risk']) for m in mismatches]}"
+
+
+def test_offline_smoke_is_clearly_identified(report):
+    if report["mode"] == "offline":
+        assert report["validation_level"] == "synthetic-smoke-only"
+        assert report["policymind"]["n_cases"] == 20
+        assert report["flowagent"]["n_cases"] == 10

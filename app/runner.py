@@ -38,7 +38,7 @@ def _policymind_outputs() -> list[dict]:
                 timeout=60,
             ).json()
             answer = resp.get("answer", "")
-            contexts = case["contexts"]  # gold contexts for reference-based metrics
+            contexts = case["contexts"]  # reference contexts only; NOT actual retrieval
         else:
             # OFFLINE: simulate a faithful answer from the gold context.
             answer = case["ground_truth"]
@@ -97,7 +97,11 @@ from .tracing import setup_tracing, tracing_active
 
 def run_all() -> dict:
     run_id = setup_tracing()
-    mode = "live" if (settings.policymind_url or settings.flowagent_url) else "offline"
+    mode = "live" if (settings.policymind_url and settings.flowagent_url) else "offline"
+    if bool(settings.policymind_url) != bool(settings.flowagent_url):
+        raise RuntimeError("Live evaluation requires BOTH POLICYMIND_URL and FLOWAGENT_URL; mixed simulated/live scores are prohibited.")
+    if mode == "live":
+        raise RuntimeError("Live release gating is disabled: PolicyMind does not expose actual retrieved contexts to this evaluator. Do not score gold contexts as live retrieval.")
 
     pm_samples = _policymind_outputs()
     fa_results = _flowagent_outputs()
@@ -111,6 +115,7 @@ def run_all() -> dict:
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "mode": mode,
+        "validation_level": "synthetic-smoke-only" if mode == "offline" else "live-unverified",
         "langsmith_run_id": run_id,
         "langsmith_active": tracing_active(),
         "policymind": {

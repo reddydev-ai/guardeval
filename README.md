@@ -1,12 +1,8 @@
 # GuardEval — LLM Evaluation & Guardrails Layer
 
-GuardEval tests **PolicyMind** and **FlowAgent** before every release. It measures
-**faithfulness, answer relevancy, context precision, hallucination risk**, and
-**task completion**, and ships a **pytest regression suite** that acts as a CI
-quality gate plus a **Streamlit dashboard** for visual review.
+GuardEval is a portfolio evaluation harness for **PolicyMind** and **FlowAgent**. Its current GitHub Actions workflow executes **synthetic/offline smoke checks only**; it does NOT test or certify the live services before release. GuardEval includes prototype metrics for **faithfulness, answer relevance, context precision, hallucination risk**, and **task completion**, plus a **pytest synthetic smoke suite** and **Streamlit dashboard**. The currently enabled checks verify the harness's mechanics—not whether real applications are safe or reliable.
 
-This is the project that signals production maturity: most candidates build a RAG
-demo; few build the evaluation layer that proves the demo is reliable.
+The objective is to develop trustworthy LLM evaluation practices. A live, independently validated release gate remains future work.
 
 ## What it evaluates
 
@@ -35,10 +31,11 @@ datasets.py  (20 PolicyMind Q&A + 10 FlowAgent scenarios, gold answers)
      └─► tests/         (pytest: CI quality gate)
 ```
 
-> RAGAS and DeepEval move fast. If a version mismatch occurs, the evaluators fall
-> back to a transparent LLM-judge scorer **clearly labelled by the `engine` field**
-> such as `engine: llm-judge`, so the harness always runs and results are never
-> silently wrong.
+> Evaluation engine provenance is reported in the output. Offline scores are synthetic; live release gating currently fails closed. Not all LLM-judge errors fall back safely, so verify the engine and mode before interpreting any score.
+
+## Evaluation integrity (important)
+
+The offline runner synthesizes answers from reference data. Its scores **do not measure actual model quality** and must not be used as release evidence or presented as validated production metrics. Although API clients are implemented, **live release gating is intentionally disabled** until real retrieval contexts are captured safely from PolicyMind and an authorized evaluation environment is provisioned. Configuring only one service URL now fails explicitly. Judge errors no longer return an invented passing score. Current CI verifies smoke-test mechanics only; full end-to-end evaluation, secrets provisioning, and safety review remain pending.
 
 ## Setup
 
@@ -46,6 +43,7 @@ datasets.py  (20 PolicyMind Q&A + 10 FlowAgent scenarios, gold answers)
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env        # add OPENAI_API_KEY
+set -a; source .env; set +a  # export credentials for this shell (trusted local file only)
 ```
 
 ### Run the dashboard
@@ -58,11 +56,11 @@ streamlit run dashboard.py
 pytest -v
 ```
 
-### Evaluate the live services
+### Live evaluation (intentionally disabled until retrieval evidence is available)
 ```bash
 export POLICYMIND_URL=http://localhost:8000
 export FLOWAGENT_URL=http://localhost:8001
-pytest -v          # now scores real outputs and enforces thresholds
+pytest -v          # currently FAILS CLOSED until real retrieved contexts are available
 ```
 
 ### Optional: LangSmith tracing
