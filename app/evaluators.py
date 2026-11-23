@@ -75,8 +75,8 @@ def _judge_score(prompt: str) -> float:
         if not m:
             return 0.0
         return max(0.0, min(1.0, float(m.group(1))))
-    except Exception:
-        return 0.8
+    except Exception as exc:
+        raise RuntimeError("LLM judge failed; refusing to fabricate a successful evaluation score") from exc
 
 
 # --------------------------------------------------------------------------- #
@@ -227,8 +227,8 @@ def run_deepeval_hallucination(samples: list[dict]) -> dict:
                 metric.measure(tc)
                 scores.append(float(metric.score))
             return {"engine": "deepeval", "hallucination": sum(scores) / (len(scores) or 1), "n": len(samples)}
-        except Exception:
-            pass
+        except Exception as exc:
+            raise RuntimeError("DeepEval failed; refusing to downgrade to heuristic scoring when LLM evaluation was requested") from exc
 
     # Robust offline fallback: estimate unsupported content from lexical grounding.
     scores = []
