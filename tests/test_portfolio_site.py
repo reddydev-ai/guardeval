@@ -41,7 +41,7 @@ def test_static_page_structure_and_links():
             parsed = urlparse(href)
             assert parsed.scheme == "https"
             assert parsed.netloc == "github.com"
-            assert parsed.path.startswith("/reddydev-ai/"), f"Unexpected external domain or account: {href}"
+            assert parsed.path == "/reddydev-ai" or parsed.path.startswith("/reddydev-ai/"), f"Unexpected external domain or account: {href}"
     assert "independent" in text.lower()
     assert "synthetic" in text.lower()
     assert "not" in text.lower() and "production" in text.lower()
