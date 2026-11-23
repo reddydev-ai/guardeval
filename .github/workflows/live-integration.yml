@@ -58,22 +58,25 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install minimal real service dependencies (no model downloads)
+      - name: Install isolated, compatible runtime environments
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install \
-            "pytest==8.3.4" "httpx==0.28.1" \
+          python -m pip install "pytest==8.3.4" "httpx==0.28.1" "pymupdf==1.25.1"
+          python -m venv .policymind-venv
+          .policymind-venv/bin/python -m pip install \
             "fastapi==0.115.6" "uvicorn==0.34.0" "python-multipart==0.0.20" "pydantic==2.13.4" \
             "qdrant-client==1.12.2" "pymupdf==1.25.1" \
-            "langchain-text-splitters==0.3.11" "langchain-core==0.3.79" \
+            "langchain-text-splitters==0.3.11" "langchain-core==0.3.79"
+          python -m venv .flowagent-venv
+          .flowagent-venv/bin/python -m pip install \
+            "fastapi==0.115.6" "uvicorn==0.34.0" "pydantic==2.13.4" \
             "langgraph==1.2.6"
 
       - name: Start isolated real APIs
         shell: bash
         run: |
           set -euo pipefail
-          (cd policymind && python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 > "$GITHUB_WORKSPACE/policymind.log" 2>&1 &)
-          (cd flowagent && python -m uvicorn app.main:app --host 127.0.0.1 --port 8001 > "$GITHUB_WORKSPACE/flowagent.log" 2>&1 &)
+          (cd policymind && ../.policymind-venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 > "$GITHUB_WORKSPACE/policymind.log" 2>&1 &)
+          (cd flowagent && ../.flowagent-venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8001 > "$GITHUB_WORKSPACE/flowagent.log" 2>&1 &)
           for port in 8000 8001; do
             ready=0
             for attempt in $(seq 1 45); do
