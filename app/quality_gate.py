@@ -50,7 +50,8 @@ def validate_quality_scores(
             metric,
         )
         threshold = _validated_unit(getattr(config, config_name), config_name)
-        if (value < threshold) if higher_is_better else (value > threshold):
+        failed = value < threshold if higher_is_better else value > threshold
+        if failed:
             raise AssertionError(f"{metric} failed its configured threshold")
         checked[metric] = value
 
