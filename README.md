@@ -1,12 +1,8 @@
 # GuardEval — LLM Evaluation & Guardrails Layer
 
-GuardEval is a portfolio evaluation harness for **PolicyMind** and **FlowAgent**. Its current GitHub Actions workflow executes **synthetic/offline smoke checks only**; it does NOT test or certify the live services before release. It measures
-**faithfulness, answer relevancy, context precision, hallucination risk**, and
-**task completion**, and ships a **pytest regression suite** that acts as a CI
-quality gate plus a **Streamlit dashboard** for exploratory visual review.
+GuardEval is a portfolio evaluation harness for **PolicyMind** and **FlowAgent**. Its current GitHub Actions workflow executes **synthetic/offline smoke checks only**; it does NOT test or certify the live services before release. GuardEval includes prototype metrics for **faithfulness, answer relevance, context precision, hallucination risk**, and **task completion**, plus a **pytest synthetic smoke suite** and **Streamlit dashboard**. The currently enabled checks verify the harness's mechanics—not whether real applications are safe or reliable.
 
-This is the project that signals production maturity: most candidates build a RAG
-demo; few build the evaluation layer that proves the demo is reliable.
+The objective is to develop trustworthy LLM evaluation practices. A live, independently validated release gate remains future work.
 
 ## What it evaluates
 
@@ -35,10 +31,7 @@ datasets.py  (20 PolicyMind Q&A + 10 FlowAgent scenarios, gold answers)
      └─► tests/         (pytest: CI quality gate)
 ```
 
-> RAGAS and DeepEval move fast. If a version mismatch occurs, the evaluators fall
-> back to a transparent LLM-judge scorer **clearly labelled by the `engine` field**
-> such as `engine: llm-judge`, so the harness always runs and results are never
-> silently wrong.
+> Evaluation engine provenance is reported in the output. Offline scores are synthetic; live release gating currently fails closed. Not all LLM-judge errors fall back safely, so verify the engine and mode before interpreting any score.
 
 ## Evaluation integrity (important)
 
