@@ -45,7 +45,7 @@ There are two distinct CI workflows. `.github/workflows/eval.yml` runs legacy **
 
 ## Run on a disposable local environment
 
-The simplest reproducible path is the [live-service Actions workflow](https://github.com/reddydev-ai/guardeval/actions/workflows/live-integration.yml), whose job checks out the other two repositories and creates **separate virtual environments** (they use incompatible major versions of LangChain dependencies). The workflow binds both services to localhost, uses a throwaway Qdrant store, and uses distinct *synthetic-only* authentication keys.
+The simplest reproducible path is the [live-service Actions workflow](https://github.com/reddydev-ai/guardeval/actions/workflows/live-integration.yml), whose job checks out the other two repositories and creates **separate virtual environments** (they use incompatible major versions of LangChain dependencies). A separate [model-dependency preflight](https://github.com/reddydev-ai/guardeval/actions/workflows/model-dependencies.yml) installs the full GuardEval dependency set, checks the environment, and imports the RAGAS/DeepEval APIs without calling paid models. The workflow binds both services to localhost, uses a throwaway Qdrant store, and uses distinct *synthetic-only* authentication keys.
 
 For a local run, start PolicyMind and FlowAgent on separate private ports, then set these values in the GuardEval environment:
 
@@ -69,7 +69,7 @@ The GuardEval report in `live-evaluation-report.json` is ignored by Git; its Git
 
 `EVAL_REQUIRE_LLM=true` is a separate, strict path that expects real LLM answers from PolicyMind, authentic RAGAS and DeepEval judging, a complete sample set, finite scores and quality thresholds taken from `app/config.py`. It fails closed if the configured model or evaluator is unavailable. It **has not been validated using paid credentials**, and must not be described as a production release gate.
 
-Before attempting it, build a compatible and isolated model-evaluation environment, configure authorized API keys separately for PolicyMind and GuardEval, and use only synthetic or explicitly approved content. Start with an independently selected, much larger held-out dataset covering out-of-scope questions, missing and contradictory documents, prompt-injection attempts, errors, latency and operational constraints. Evaluate label quality and judge agreement before trusting thresholds.
+Before attempting it, use the separate model-evaluation environment tested in the dependency preflight, configure authorized API keys **separately for PolicyMind's answer generation and GuardEval's judges**, and use only synthetic or explicitly approved content. Passing the import test does **not** mean the paid judge or model evaluation was executed. Start with an independently selected, much larger held-out dataset covering out-of-scope questions, missing and contradictory documents, prompt-injection attempts, errors, latency and operational constraints. Evaluate label quality and judge agreement before trusting thresholds.
 
 ## Integrity and security boundaries
 
@@ -77,7 +77,7 @@ Before attempting it, build a compatible and isolated model-evaluation environme
 - **Synthetic pass rates are not estimates of general-world accuracy.** No probabilistic confidence bounds or production safety guarantees are inferred from the small corpus.
 - PolicyMind's confidence score is a retrieval-derived heuristic and is not calibrated.
 - The default mode never treats reference contexts as if the service retrieved them.
-- Remote evaluation targets require an explicit HTTPS opt-in; do not evaluate untrusted URLs.
+- Remote evaluation targets require both `ALLOW_REMOTE_EVAL=true` and an explicit `EVAL_ALLOWED_HOSTS` hostname allowlist, with HTTPS enforced; do not evaluate untrusted URLs.
 - Keep all services private; identity, per-document permissions, audit logs, rate limiting, secret rotation, prompt-injection defense and security review are still required for production.
 
 ## Repository organization
