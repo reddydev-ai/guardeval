@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101e2e">
+  <meta name="description" content="Independent AI Automation Product Management portfolio: cited policy RAG, human-in-the-loop agents, and reproducible evaluation.">
+  <title>AI Automation Product Management | Engineering Portfolio</title>
+  <style>
+    :root{color-scheme:light;--ink:#142234;--muted:#556477;--navy:#101e2e;--line:#dce4ee;--bg:#f6f8fb;--mint:#d9f5ec;--teal:#077b69;--white:#fff;--focus:#076bca}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    a{color:#075d95}a:hover{text-decoration-thickness:2px}a:focus-visible{outline:3px solid var(--focus);outline-offset:4px}
+    .skip{position:absolute;left:12px;top:-80px;background:white;padding:12px 18px;z-index:5}.skip:focus{top:12px}
+    .wrap{max-width:1120px;margin:0 auto;padding:0 24px}.top{background:var(--navy);color:white}
+    nav{display:flex;justify-content:space-between;align-items:center;gap:22px;padding:22px 0;flex-wrap:wrap}
+    .mark{color:white;text-decoration:none;font-size:.9rem;font-weight:750;letter-spacing:.07em;text-transform:uppercase}
+    .navlinks{display:flex;flex-wrap:wrap;gap:22px}.navlinks a{color:#d8e8f0;text-decoration:none;font-size:.9rem}
+    .hero{padding:76px 0 96px;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.8fr);gap:48px;align-items:center}
+    .eyebrow{text-transform:uppercase;font-size:.78rem;font-weight:800;letter-spacing:.19em;color:#95dfc9}
+    h1{font-size:clamp(2.6rem,5.6vw,4.8rem);line-height:1.1;letter-spacing:-.055em;font-weight:760;margin:18px 0 23px}
+    h1 span{color:#a5e9d4}h2{font-size:clamp(1.85rem,3.2vw,2.6rem);letter-spacing:-.037em;line-height:1.18;margin:0 0 18px}
+    h3{line-height:1.25;margin:0 0 12px;font-size:1.33rem;letter-spacing:-.02em}
+    p{margin:0 0 15px}.lead{font-size:1.14rem;color:#d7e3ed;max-width:670px}
+    .actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+    .button{display:inline-block;padding:12px 20px;border-radius:10px;font-weight:700;text-decoration:none;background:#a5e9d4;color:#0d302a}
+    .button.secondary{border:1px solid #6b8297;background:transparent;color:white}
+    .hero-card{border:1px solid #415469;border-radius:18px;padding:30px;background:#162a3e;box-shadow:0 14px 40px rgba(0,0,0,.15)}
+    .hero-card strong{color:#a5e9d4;font-size:.88rem;letter-spacing:.06em;text-transform:uppercase}
+    .hero-card ol{margin:16px 0 0;padding-left:20px}.hero-card li{margin:0 0 18px}.hero-card li:last-child{margin-bottom:0}
+    .hero-card small{color:#c6d8e6;display:block}
+    section{padding:76px 0}.section-intro{max-width:750px;color:var(--muted);font-size:1.05rem;margin-bottom:34px}
+    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+    .project{background:var(--white);border:1px solid var(--line);border-radius:17px;padding:28px;display:flex;flex-direction:column;box-shadow:0 5px 22px rgba(20,34,52,.035)}
+    .kicker{font-size:.75rem;text-transform:uppercase;letter-spacing:.14em;font-weight:800;color:var(--teal);margin-bottom:12px}
+    .project p{color:var(--muted)}.project .links{display:flex;gap:16px;flex-wrap:wrap;margin-top:auto;padding-top:16px;font-size:.93rem;font-weight:700}
+    .divider{height:1px;background:var(--line)}.contrast{background:#eaf0f5}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+    .stat{background:#fff;padding:24px;border-radius:14px;border:1px solid #d3dfe9}
+    .stat b{display:block;font-size:2.3rem;line-height:1.2;letter-spacing:-.055em;color:#146a5c}
+    .stat span{display:block;color:var(--muted);font-size:.93rem;margin-top:7px}
+    .fine{font-size:.9rem;color:var(--muted);margin-top:22px}
+    .story{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+    .story article{padding:26px;border-left:4px solid #2d8b7b;background:white;border-radius:0 14px 14px 0}
+    .story article p{color:var(--muted)}
+    .limits{background:#fff;border:1px solid var(--line);padding:28px;border-radius:16px}
+    .limits p{max-width:800px;color:var(--muted)}.limits b{color:var(--ink)}
+    .footer{background:var(--navy);color:#cfdae5;padding:34px 0;font-size:.91rem}
+    .footer a{color:#a5e9d4}
+    @media(max-width:860px){.hero{grid-template-columns:1fr;padding:55px 0 72px;gap:22px}.grid,.stats{grid-template-columns:1fr}.story{grid-template-columns:1fr}section{padding:55px 0}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  </style>
+</head>
+<body>
+  <a href="#main" class="skip">Skip to main content</a>
+  <header class="top">
+    <div class="wrap">
+      <nav aria-label="Main navigation">
+        <a class="mark" href="https://github.com/reddydev-ai">reddydev-ai / portfolio</a>
+        <div class="navlinks">
+          <a href="#projects">Projects</a><a href="#verification">Evidence</a><a href="#approach">Product approach</a><a href="#limits">Limitations</a>
+        </div>
+      </nav>
+      <div class="hero">
+        <div>
+          <div class="eyebrow">AI product strategy · technical delivery · trust</div>
+          <h1>Build useful AI.<br><span>Prove what works.</span></h1>
+          <p class="lead">An engineering-backed AI Automation Product Management portfolio exploring cited policy answers, human-reviewed agents, and release-quality evidence.</p>
+          <div class="actions">
+            <a class="button" href="#projects">Explore three projects</a>
+            <a class="button secondary" href="https://github.com/reddydev-ai/guardeval/blob/main/PORTFOLIO.md">Read portfolio brief</a>
+          </div>
+        </div>
+        <aside class="hero-card" aria-label="Product decision priorities">
+          <strong>Product priorities</strong>
+          <ol>
+            <li>Reliable answers <small>Make source evidence inspectable</small></li>
+            <li>Accountable automation <small>Keep a human at consequential gates</small></li>
+            <li>Defensible release decisions <small>Measure precisely; disclose unknowns</small></li>
+          </ol>
+        </aside>
+      </div>
+    </div>
+  </header>
+  <main id="main">
+    <section id="projects" aria-labelledby="projects-title">
+      <div class="wrap">
+        <div class="eyebrow" style="color:#127869">Selected independent work</div>
+        <h2 id="projects-title">Three connected product problems</h2>
+        <p class="section-intro">Each project shows a distinct trade-off in bringing AI closer to operational use. These are independent prototypes, not employer implementations.</p>
+        <div class="grid">
+          <article class="project">
+            <div class="kicker">01 · Document intelligence</div>
+            <h3>PolicyMind</h3>
+            <p>How do you make policy search faster to use without losing the ability to verify an answer?</p>
+            <p><strong>Decision:</strong> prioritize page citations, evidence access controls and document lifecycle handling.</p>
+            <div class="links"><a href="https://github.com/reddydev-ai/policymind">Source ↗</a><a href="https://github.com/reddydev-ai/policymind/blob/main/docs/PRODUCT_CASE_STUDY.md">Product case study ↗</a></div>
+          </article>
+          <article class="project">
+            <div class="kicker">02 · Human-reviewed automation</div>
+            <h3>FlowAgent</h3>
+            <p>Which vendor onboarding steps can be automated safely, and which should stay with an accountable reviewer?</p>
+            <p><strong>Decision:</strong> deterministic document checks and a real approval pause before final action.</p>
+            <div class="links"><a href="https://github.com/reddydev-ai/flowagent">Source ↗</a><a href="https://github.com/reddydev-ai/flowagent/blob/main/docs/PRODUCT_CASE_STUDY.md">Product case study ↗</a></div>
+          </article>
+          <article class="project">
+            <div class="kicker">03 · AI quality governance</div>
+            <h3>GuardEval</h3>
+            <p>How can a product owner distinguish genuinely tested workflows from synthetic results that look stronger than they are?</p>
+            <p><strong>Decision:</strong> fail closed on missing evidence and label integration and model-quality tests separately.</p>
+            <div class="links"><a href="https://github.com/reddydev-ai/guardeval">Source ↗</a><a href="https://github.com/reddydev-ai/guardeval/blob/main/docs/PRODUCT_CASE_STUDY.md">Product case study ↗</a></div>
+          </article>
+        </div>
+      </div>
+    </section>
+    <section id="verification" class="contrast" aria-labelledby="verification-title">
+      <div class="wrap">
+        <div class="eyebrow" style="color:#127869">Reproducible engineering evidence</div>
+        <h2 id="verification-title">Make the proof inspectable</h2>
+        <p class="section-intro">CI exercises two running APIs with a disposable synthetic corpus. The numbers below describe those test scenarios—not production user outcomes or general model accuracy.</p>
+        <div class="stats">
+          <div class="stat"><b>5</b><span>synthetic RAG retrieval and citation scenarios</span></div>
+          <div class="stat"><b>6</b><span>synthetic agent approval and risk scenarios</span></div>
+          <div class="stat"><b>30</b><span>draft evaluation cases awaiting independent review</span></div>
+        </div>
+        <p class="fine">Verification links: <a href="https://github.com/reddydev-ai/guardeval/actions/workflows/live-integration.yml">Running-service CI</a> · <a href="https://github.com/reddydev-ai/guardeval/actions/workflows/eval.yml">Regression tests</a> · <a href="https://github.com/reddydev-ai/guardeval/blob/main/evaluation/PROTOCOL.md">Dataset protocol</a>. The default CI route uses extractive—not paid generative—answers.</p>
+      </div>
+    </section>
+    <section id="approach" aria-labelledby="approach-title">
+      <div class="wrap">
+        <div class="eyebrow" style="color:#127869">Product management principles</div>
+        <h2 id="approach-title">Engineering choices are product decisions</h2>
+        <p class="section-intro">A roadmap should have a measurable customer outcome, a controlled release boundary and a reason to say no to unnecessary complexity.</p>
+        <div class="story">
+          <article><h3>Value over novelty</h3><p>Measure successful tasks, time to trustworthy answers, adoption, manual-review load, and total operating cost—not the number of agent frameworks used.</p></article>
+          <article><h3>Human accountability</h3><p>Keep mandatory human approval and deterministic risk floors where automated decisions could create material harm.</p></article>
+          <article><h3>Release with evidence</h3><p>Use transparent evaluations, explicit uncertainty and reproducible regressions; a passing synthetic check is not a quality certificate.</p></article>
+          <article><h3>Security before public APIs</h3><p>Public documentation is available; service backends remain private until identity, authorization, document controls and operations are ready.</p></article>
+        </div>
+      </div>
+    </section>
+    <section id="limits" class="contrast" aria-labelledby="limits-title">
+      <div class="wrap">
+        <h2 id="limits-title">What is not yet proven</h2>
+        <div class="limits">
+          <p><b>Model quality:</b> No paid, credentialed generative-model evaluation on an independently reviewed held-out dataset has been completed. The draft challenge cases are not scored benchmarks.</p>
+          <p><b>Production readiness:</b> Per-user authorization, document ACLs, secure file sandboxing, realistic reliability SLOs, audit logging and broader adversarial validation remain open.</p>
+          <p><b>Business impact:</b> No adoption, ROI, customer savings or employer deployment outcomes are attributed to these public repositories.</p>
+          <p><a href="https://github.com/reddydev-ai/guardeval/blob/main/docs/SECURITY_AND_DEPLOYMENT_DECISION.md">Read the deployment and security decision record ↗</a> · <a href="https://github.com/reddydev-ai/guardeval/blob/main/docs/INTERVIEW_WALKTHROUGH.md">Seven-minute interview walkthrough ↗</a></p>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="footer">
+    <div class="wrap">Independent AI Automation Product Management portfolio · Source and verification available on <a href="https://github.com/reddydev-ai">GitHub</a> · No tracking scripts, external fonts or paid services.</div>
+  </footer>
+</body>
+</html>
