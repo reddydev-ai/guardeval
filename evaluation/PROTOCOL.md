@@ -37,3 +37,4 @@ The first 6 answerable items are tagged `development`; 24 are tagged `candidate_
 - [Product decision case study](../docs/PRODUCT_CASE_STUDY.md)
 
 **This catalogue is a research/design deliverable, not a passing model benchmark.**
+

@@ -78,3 +78,4 @@ def test_published_status_and_release_decisions_cannot_regress_to_starter_copy()
     for value in ["5 scripted cases", "6 scripted cases", "NOT MEASURED", "NOT IMPLEMENTED"]:
         assert value in decision
     assert "0.70" in decision and "illustrative defaults" in decision
+

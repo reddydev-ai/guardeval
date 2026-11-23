@@ -111,3 +111,4 @@ tests/                     Integrity, authorization, metrics and regression chec
 ```
 
 **Project status:** Real-service CI integration is implemented and verifiable. Credentialed LLM evaluation and production security remain separate, unmet validation milestones.
+
