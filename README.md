@@ -1,6 +1,8 @@
-# GuardEval — Verifiable RAG and Agent Workflow Evaluation
+# GuardEval (RAG & Agent Workflow QA) — Verifiable Integration Tests
 
-**[Explore the published AI Automation Product Management portfolio](https://reddydev-ai.github.io/guardeval/)** · [Portfolio narrative](PORTFOLIO.md) · [Verification workflows](https://github.com/reddydev-ai/guardeval/actions)
+**[Live AI Automation Product Management portfolio](https://reddydev-ai.github.io/guardeval/)** · [Portfolio narrative](PORTFOLIO.md) · [Release decision and evidence table](docs/RELEASE_DECISION_RECORD.md) · [Verified workflows](https://github.com/reddydev-ai/guardeval/actions)
+
+**Name clarification:** This independent repository tests RAG evidence and human-reviewed workflow integration. It is **not affiliated with** the unrelated [GuardEval content-moderation benchmark / GemmaGuard research](https://arxiv.org/abs/2601.03273). Neither that dataset nor its performance claims are part of this project.
 
 > **AI product management perspective:** Treat evaluation as a release decision, not just a dashboard of attractive scores. [Explore the full portfolio](PORTFOLIO.md) · [Product case study](docs/PRODUCT_CASE_STUDY.md) · [Seven-minute interview walkthrough](docs/INTERVIEW_WALKTHROUGH.md)
 
@@ -94,7 +96,7 @@ Before attempting it, use the separate model-evaluation environment tested in th
 
 ## Recruiter-friendly portfolio overview
 
-The [portfolio overview](PORTFOLIO.md) is intended as the starting point for AI Automation Product Manager roles. A static one-page design is also available at [docs/index.html](docs/index.html) as *source only*; GitHub Pages has **not** been enabled or published. A [profile README draft](docs/GITHUB_PROFILE_README_READY.md) is prepared for the `reddydev-ai/reddydev-ai` profile repository once that repository exists.
+The [live GitHub Pages website](https://reddydev-ai.github.io/guardeval/) and [public GitHub profile README](https://github.com/reddydev-ai) are published. Their source files are [docs/index.html](docs/index.html) and [reddydev-ai/reddydev-ai/README.md](https://github.com/reddydev-ai/reddydev-ai/blob/main/README.md). The [product decision record](docs/RELEASE_DECISION_RECORD.md) displays explicit evidence gates and no-go decisions. [Browser audit](https://github.com/reddydev-ai/guardeval/actions/workflows/portfolio-browser.yml) checks published desktop/mobile layout; [publishing guide](docs/PUBLISHING_GUIDE.md) is now a maintenance reference.
 
 ## Repository organization
 
