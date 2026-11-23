@@ -55,3 +55,24 @@ def test_readme_portfolio_is_visible_and_truthful():
     assert "https://github.com/reddydev-ai/guardeval/blob/main/PORTFOLIO.md" in profile
     assert "example.com" not in profile
     assert "555-" not in profile
+
+
+def test_published_status_and_release_decisions_cannot_regress_to_starter_copy():
+    site = SITE.read_text(encoding="utf-8")
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    decision = (ROOT / "docs" / "RELEASE_DECISION_RECORD.md").read_text(encoding="utf-8")
+    guide = (ROOT / "docs" / "PUBLISHING_GUIDE.md").read_text(encoding="utf-8")
+
+    assert "Design accountable AI." in site
+    assert 'class="evidence-table"' in site
+    assert 'id="approach"' in site
+    assert "GuardEval" in site and "academic moderation benchmark" in site
+    assert "The public backend was" in (ROOT / "PORTFOLIO.md").read_text(encoding="utf-8")
+    assert "https://reddydev-ai.github.io/guardeval/" in readme
+    assert "GitHub Pages has **not** been enabled or published" not in readme
+    assert "profile repository once that repository exists" not in readme
+    assert "not affiliated" in readme.lower() and "arxiv.org/abs/2601.03273" in readme
+    assert "https://github.com/reddydev-ai/reddydev-ai/blob/main/README.md" in guide
+    for value in ["5 scripted cases", "6 scripted cases", "NOT MEASURED", "NOT IMPLEMENTED"]:
+        assert value in decision
+    assert "0.70" in decision and "illustrative defaults" in decision
