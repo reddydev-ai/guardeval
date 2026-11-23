@@ -16,4 +16,4 @@ I work on AI product management problems: how to move from a promising demonstra
 
 I aim to demonstrate technical product judgment without inflating prototype performance. The repositories are *independent demos*, not claims of employer deployments or generalized model-quality validation.
 
-> **Publishing note:** This text is a ready-to-use GitHub profile README. It will appear on the user's GitHub profile only after a **public repository exactly named `reddydev-ai`** is created under the `reddydev-ai` account and its root `README.md` is added. The current GitHub connection cannot create a repository. This file is intentionally stored here until then.
+
