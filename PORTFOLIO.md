@@ -1,6 +1,6 @@
 # AI Automation Product Management — Engineering Portfolio
 
-**From AI product strategy to demonstrable controls for trustworthy automation.**
+**Product decisions and their evidence — including when *not* to launch.**
 
 This portfolio connects three **independent, public, reproducible prototypes** addressing a recurring AI product-management challenge: delivering useful AI capabilities without treating impressive outputs as verified business outcomes.
 
@@ -12,7 +12,11 @@ This portfolio connects three **independent, public, reproducible prototypes** a
 | --- | --- | --- | --- |
 | **[PolicyMind](https://github.com/reddydev-ai/policymind)** | Policy questions need credible source evidence | PDF ingestion, retrieval, cited answers and restricted evaluation evidence | Prefer traceability and policy freshness over unsupported fluency |
 | **[FlowAgent](https://github.com/reddydev-ai/flowagent)** | Vendor processes need structure and accountable decisions | Document-completeness checks, deterministic risk floor, LangGraph pause/resume and reviewer protection | Automate preparation; retain human approval for consequential actions |
-| **[GuardEval](https://github.com/reddydev-ai/guardeval)** | Green smoke tests can mislead AI release decisions | Running-service integration, source/citation checks, approval integrity, fail-closed judge validation | Separate tested behavior from unmeasured model quality |
+| **[GuardEval — RAG & Workflow QA](https://github.com/reddydev-ai/guardeval)** | Green smoke tests can mislead AI release decisions | Running-service integration, source/citation checks, approval integrity, fail-closed judge validation | Separate tested behavior from unmeasured model quality |
+
+**Name clarification:** This repository's GuardEval is independent and unrelated to the academic [GuardEval moderation benchmark and GemmaGuard model](https://arxiv.org/abs/2601.03273). It does not contain that moderation dataset.
+
+**Actual product decision:** The public backend was **not released** because identity, policy access controls and calibrated generative quality remain unverified; the portfolio site is static. See the [decision record and current gate status](docs/RELEASE_DECISION_RECORD.md).
 
 ## How they fit together
 

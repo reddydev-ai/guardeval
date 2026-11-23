@@ -37,6 +37,13 @@
     .stat{background:#fff;padding:24px;border-radius:14px;border:1px solid #d3dfe9}
     .stat b{display:block;font-size:2.3rem;line-height:1.2;letter-spacing:-.055em;color:#146a5c}
     .stat span{display:block;color:var(--muted);font-size:.93rem;margin-top:7px}
+    .evidence-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:white}
+    .evidence-table{border-collapse:collapse;width:100%;min-width:730px;text-align:left;font-size:.91rem}
+    .evidence-table th,.evidence-table td{padding:16px;vertical-align:top;border-bottom:1px solid var(--line)}
+    .evidence-table thead{background:#dce9ed}.evidence-table tbody tr:last-child th,.evidence-table tbody tr:last-child td{border-bottom:0}
+    .evidence-table th[scope=row]{font-weight:750;width:20%}.state{font-weight:750;white-space:nowrap}
+    .state.verified{color:#12634f}.state.blocked{color:#994018}
+    .identity-note{font-size:.84rem;line-height:1.4;color:var(--muted)}.identity-note a{font-weight:650}
     .fine{font-size:.9rem;color:var(--muted);margin-top:22px}
     .story{display:grid;grid-template-columns:1fr 1fr;gap:22px}
     .story article{padding:26px;border-left:4px solid #2d8b7b;background:white;border-radius:0 14px 14px 0}
@@ -62,19 +69,19 @@
       <div class="hero">
         <div>
           <div class="eyebrow">AI product strategy · technical delivery · trust</div>
-          <h1>Build useful AI.<br><span>Prove what works.</span></h1>
-          <p class="lead">An engineering-backed AI Automation Product Management portfolio exploring cited policy answers, human-reviewed agents, and release-quality evidence.</p>
+          <h1>Design accountable AI.<br><span>Show the evidence.</span></h1>
+          <p class="lead">Independent product-and-engineering work on cited policy answers, human-reviewed agents and evidence-bounded release decisions. No commercial results or general LLM-quality guarantees are claimed.</p>
           <div class="actions">
             <a class="button" href="#projects">Explore three projects</a>
             <a class="button secondary" href="https://github.com/reddydev-ai/guardeval/blob/main/PORTFOLIO.md">Read portfolio brief</a>
           </div>
         </div>
         <aside class="hero-card" aria-label="Product decision priorities">
-          <strong>Product priorities</strong>
+          <strong>Deliberate no-go decisions</strong>
           <ol>
-            <li>Reliable answers <small>Make source evidence inspectable</small></li>
-            <li>Accountable automation <small>Keep a human at consequential gates</small></li>
-            <li>Defensible release decisions <small>Measure precisely; disclose unknowns</small></li>
+            <li>No public AI backend <small>Identity and policy-data controls remain unverified</small></li>
+            <li>No autonomous vendor approvals <small>A separate human decision is required</small></li>
+            <li>No model-quality badge <small>No independently reviewed generative evaluation yet</small></li>
           </ol>
         </aside>
       </div>
@@ -102,8 +109,9 @@
             <div class="links"><a href="https://github.com/reddydev-ai/flowagent">Source ↗</a><a href="https://github.com/reddydev-ai/flowagent/blob/main/docs/PRODUCT_CASE_STUDY.md">Product case study ↗</a></div>
           </article>
           <article class="project">
-            <div class="kicker">03 · AI quality governance</div>
+            <div class="kicker">03 · RAG and workflow QA · Not content moderation</div>
             <h3>GuardEval</h3>
+            <p class="identity-note">Independent RAG/agent workflow tester; <a href="https://arxiv.org/abs/2601.03273">unrelated to the academic moderation benchmark of the same name</a>.</p>
             <p>How can a product owner distinguish genuinely tested workflows from synthetic results that look stronger than they are?</p>
             <p><strong>Decision:</strong> fail closed on missing evidence and label integration and model-quality tests separately.</p>
             <div class="links"><a href="https://github.com/reddydev-ai/guardeval">Source ↗</a><a href="https://github.com/reddydev-ai/guardeval/blob/main/docs/PRODUCT_CASE_STUDY.md">Product case study ↗</a></div>
@@ -114,27 +122,35 @@
     <section id="verification" class="contrast" aria-labelledby="verification-title">
       <div class="wrap">
         <div class="eyebrow" style="color:#127869">Reproducible engineering evidence</div>
-        <h2 id="verification-title">Make the proof inspectable</h2>
-        <p class="section-intro">CI exercises two running APIs with a disposable synthetic corpus. The numbers below describe those test scenarios—not production user outcomes or general model accuracy.</p>
-        <div class="stats">
-          <div class="stat"><b>5</b><span>synthetic RAG retrieval and citation scenarios</span></div>
-          <div class="stat"><b>6</b><span>synthetic agent approval and risk scenarios</span></div>
-          <div class="stat"><b>30</b><span>draft evaluation cases awaiting independent review</span></div>
+        <h2 id="verification-title">What passed, and what did not</h2>
+        <p class="section-intro">A release decision is only as strong as its evidence. Below are scripted, reproducible checks against real services with synthetic input—not percentages of real-world LLM accuracy.</p>
+        <div class="evidence-scroll" role="region" aria-label="Engineering evidence and release gate statuses" tabindex="0">
+          <table class="evidence-table">
+            <thead><tr><th scope="col">Gate</th><th scope="col">Defined acceptance check</th><th scope="col">Evidence</th><th scope="col">Status</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Retrieval + citations</th><td>All 5 scripted synthetic questions return expected source/page and inline citations</td><td><a href="https://github.com/reddydev-ai/guardeval/actions/workflows/live-integration.yml">Running-service CI</a></td><td><span class="state verified">Passed — 5 cases</span></td></tr>
+              <tr><th scope="row">Human approval controls</th><td>All 6 synthetic vendor scenarios satisfy risk rules, reviewer authorization and replay checks</td><td><a href="https://github.com/reddydev-ai/guardeval/actions/workflows/live-integration.yml">Running-service CI</a></td><td><span class="state verified">Passed — 6 cases</span></td></tr>
+              <tr><th scope="row">Dependency setup</th><td>Optional judge libraries install and required APIs import without paid calls</td><td><a href="https://github.com/reddydev-ai/guardeval/actions/workflows/model-dependencies.yml">Dependency preflight</a></td><td><span class="state verified">Passed — imports only</span></td></tr>
+              <tr><th scope="row">Generative model quality</th><td>Human-reviewed document-held-out questions, actual LLM answers and calibrated judging</td><td><a href="https://github.com/reddydev-ai/guardeval/blob/main/evaluation/PROTOCOL.md">Proposed protocol</a></td><td><span class="state blocked">Not measured</span></td></tr>
+              <tr><th scope="row">Production release</th><td>Per-user identity, document access control, safe ingestion, monitoring and incident readiness</td><td><a href="https://github.com/reddydev-ai/guardeval/blob/main/docs/SECURITY_AND_DEPLOYMENT_DECISION.md">Security review</a></td><td><span class="state blocked">Not approved</span></td></tr>
+            </tbody>
+          </table>
         </div>
-        <p class="fine">Verification links: <a href="https://github.com/reddydev-ai/guardeval/actions/workflows/live-integration.yml">Running-service CI</a> · <a href="https://github.com/reddydev-ai/guardeval/actions/workflows/eval.yml">Regression tests</a> · <a href="https://github.com/reddydev-ai/guardeval/blob/main/evaluation/PROTOCOL.md">Dataset protocol</a>. The default CI route uses extractive—not paid generative—answers.</p>
+        <p class="fine">The <a href="https://github.com/reddydev-ai/guardeval/blob/main/evaluation/catalogue_v1.jsonl">30 additional cases</a> are draft and unreviewed, not model results. For detailed acceptance criteria and illustrative, uncalibrated metric configuration, read the <a href="https://github.com/reddydev-ai/guardeval/blob/main/docs/RELEASE_DECISION_RECORD.md">release decision record</a>. Default CI uses extractive—not paid generative—answers.</p>
       </div>
     </section>
     <section id="approach" aria-labelledby="approach-title">
       <div class="wrap">
-        <div class="eyebrow" style="color:#127869">Product management principles</div>
-        <h2 id="approach-title">Engineering choices are product decisions</h2>
-        <p class="section-intro">A roadmap should have a measurable customer outcome, a controlled release boundary and a reason to say no to unnecessary complexity.</p>
+        <div class="eyebrow" style="color:#127869">Specific product decisions</div>
+        <h2 id="approach-title">A roadmap also requires saying no</h2>
+        <p class="section-intro">The work deliberately prioritizes evidence traceability and controllable automation over a public chatbot demo or unverified model-quality claims. These are prototype scope choices, not verified decisions from a commercial PM organization.</p>
         <div class="story">
-          <article><h3>Value over novelty</h3><p>Measure successful tasks, time to trustworthy answers, adoption, manual-review load, and total operating cost—not the number of agent frameworks used.</p></article>
-          <article><h3>Human accountability</h3><p>Keep mandatory human approval and deterministic risk floors where automated decisions could create material harm.</p></article>
-          <article><h3>Release with evidence</h3><p>Use transparent evaluations, explicit uncertainty and reproducible regressions; a passing synthetic check is not a quality certificate.</p></article>
-          <article><h3>Security before public APIs</h3><p>Public documentation is available; service backends remain private until identity, authorization, document controls and operations are ready.</p></article>
+          <article><h3>No public backend yet</h3><p>The Docker services could be hosted, but user identity, document permissions and safe ingestion are incomplete. Only static portfolio pages are exposed.</p></article>
+          <article><h3>No autonomous final approvals</h3><p>FlowAgent can prepare risk context, but vendor decisions require an explicit separate reviewer action. Missing documents enforce a deterministic minimum risk.</p></article>
+          <article><h3>No quality badge from CI</h3><p>Five retrieval and six agent scenarios confirm selected behavior; they cannot establish a calibrated answer-quality or hallucination rate.</p></article>
+          <article><h3>Measure before promising ROI</h3><p>Compare time to a correctly cited policy answer and successful onboarding completion with an observed manual baseline. No user study or realized savings is claimed.</p></article>
         </div>
+        <p class="fine"><a href="https://github.com/reddydev-ai/guardeval/blob/main/docs/RELEASE_DECISION_RECORD.md">Read the full release decision record and proposed user research plan</a>.</p>
       </div>
     </section>
     <section id="limits" class="contrast" aria-labelledby="limits-title">
