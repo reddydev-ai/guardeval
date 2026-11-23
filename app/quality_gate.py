@@ -9,7 +9,6 @@ from __future__ import annotations
 import math
 from collections.abc import Mapping
 
-from .config import get_settings
 
 RAG_THRESHOLDS = (
     ("faithfulness", "min_faithfulness", True),
@@ -42,7 +41,11 @@ def validate_quality_scores(
         if isinstance(n, bool) or not isinstance(n, int) or n != expected_cases:
             raise AssertionError("Evaluation engine has incomplete or invalid case coverage")
 
-    config = thresholds if thresholds is not None else get_settings()
+    if thresholds is None:
+        from .config import get_settings
+        config = get_settings()
+    else:
+        config = thresholds
     checked = {}
     for metric, config_name, higher_is_better in (*RAG_THRESHOLDS, HALLUCINATION_THRESHOLD):
         value = _validated_unit(
