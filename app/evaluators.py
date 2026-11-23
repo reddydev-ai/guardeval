@@ -18,6 +18,8 @@ Metrics implemented:
 from __future__ import annotations
 
 import re
+import math
+from numbers import Real
 from functools import lru_cache
 
 from .config import get_settings
@@ -152,6 +154,34 @@ def _llm_rag_metrics(samples: list[dict]) -> dict:
     }
 
 
+def _verified_ragas_frame(frame, expected_cases: int) -> dict:
+    """Reject missing/partial/NaN metric rows before computing any average.
+
+    RAGAS may leave per-case scores undefined after a failed judge call. A
+    DataFrame.mean() silently skips those rows and can invent a passing mean.
+    """
+    if expected_cases < 1 or len(frame) != expected_cases:
+        raise RuntimeError("RAGAS returned incomplete evaluation rows")
+    choices = {
+        "faithfulness": ("faithfulness",),
+        "answer_relevancy": ("answer_relevancy", "response_relevancy"),
+        "context_precision": ("llm_context_precision_with_reference", "context_precision"),
+    }
+    metrics = {}
+    for label, candidates in choices.items():
+        names = [name for name in candidates if name in frame.columns]
+        if len(names) != 1:
+            raise RuntimeError(f"RAGAS returned missing or ambiguous {label} column")
+        raw = list(frame[names[0]])
+        if len(raw) != expected_cases:
+            raise RuntimeError(f"RAGAS returned incomplete {label} case scores")
+        if any(isinstance(v, bool) or not isinstance(v, Real) or
+               not math.isfinite(float(v)) or not 0 <= float(v) <= 1 for v in raw):
+            raise RuntimeError(f"RAGAS returned invalid or missing {label} case scores")
+        metrics[label] = sum(float(v) for v in raw) / expected_cases
+    return {"engine": "ragas", **metrics, "n": expected_cases}
+
+
 def _ragas_metrics(samples: list[dict], *, strict: bool = False) -> dict | None:
     """RAGAS metrics; strict mode never substitutes another scoring engine."""
     if not settings.openai_api_key:
@@ -184,13 +214,7 @@ def _ragas_metrics(samples: list[dict], *, strict: bool = False) -> dict | None:
             embeddings=emb,
         )
         df = result.to_pandas()
-        return {
-            "engine": "ragas",
-            "faithfulness": float(df["faithfulness"].mean()),
-            "answer_relevancy": float(df.filter(like="relevancy").mean(axis=1).mean()),
-            "context_precision": float(df.filter(like="context_precision").mean(axis=1).mean()),
-            "n": len(samples),
-        }
+        return _verified_ragas_frame(df, len(samples))
     except Exception as exc:
         if strict:
             raise RuntimeError("Real RAGAS evaluation failed; no fallback score was generated") from exc
