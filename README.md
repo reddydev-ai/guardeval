@@ -78,3 +78,47 @@ every judged run in LangSmith.
 - Add latency and cost tracking per query alongside quality.
 - GitHub Actions workflow included in .github/workflows/eval.yml.
 - Track scores over time (store results.json history) to detect drift.
+
+
+## Real-service evaluation — new opt-in pipeline
+
+The GitHub Actions workflow `.github/workflows/live-integration.yml` starts **real**
+PolicyMind and FlowAgent APIs in a disposable CI environment, ingests an
+independently-authored three-page **synthetic PDF** through PolicyMind's actual
+upload route, then checks PolicyMind's exact retrieved chunks/citations and
+FlowAgent's pause/resume risk decisions. It verifies negative authorization
+cases and uses actual retrieval; **nothing is scored against fabricated gold
+contexts**.
+
+The default job runs **without model keys**. Its report is
+`mode: live-service-smoke`: actual API and retrieval integration was exercised,
+but answer generation is the extractive demo fallback and web research is disabled.
+It is **not** an LLM model-quality score or production release certification.
+
+Run locally only with dedicated, disposable service instances and separate
+keys (never submit employer/private documents to test pipelines):
+
+```bash
+# In a separate environment: start the two protected API services, with
+# POLICYMIND_ENABLE_EVAL_API=true and a distinct POLICYMIND_EVAL_KEY.
+# Set both service URLs and both API/reviewer keys in this terminal.
+python -m scripts.seed_live
+python -m app.live
+```
+
+Optional `EVAL_REQUIRE_LLM=true` enables a **strict model-quality mode**:
+GuardEval requires actual LLM generation and judge credentials, real retrieved
+contexts, RAGAS and DeepEval; missing evaluators, credentials, or failed thresholds
+abort without presenting fallback scores as validated results. This paid,
+credentialed mode has **not** been verified in CI and should not be represented
+as proven until independent model experiments pass.
+
+The synthetic corpus (3 RAG/3 agent cases) is intentionally small; it cannot
+establish adversarial safety, generalized hallucination rates, drift, robustness
+or deployment readiness. Expand with approved held-out data and a calibrated
+evaluation plan before setting a production release gate.
+
+**Evidence security:** PolicyMind's `/evaluation/ask` returns document text.
+Keep it disabled except inside a private, authorized evaluation environment,
+with an independent evaluation secret. CI report summaries omit full text,
+queries and keys.
