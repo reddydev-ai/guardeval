@@ -38,11 +38,11 @@ jobs:
           path: guardeval
           persist-credentials: false
 
-      - name: Checkout PolicyMind evaluation branch
+      - name: Checkout PolicyMind merged main
         uses: actions/checkout@v4
         with:
           repository: reddydev-ai/policymind
-          ref: feature/real-service-evaluation-2026-11-22
+          ref: main
           path: policymind
           persist-credentials: false
 
