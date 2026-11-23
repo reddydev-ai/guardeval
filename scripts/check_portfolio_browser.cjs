@@ -98,7 +98,7 @@ fs.mkdirSync(outDir, { recursive: true });
       assert.deepEqual(sourceNames.map(s => s.trim()), audit.cards.map(c => c.title),
                        'Published card titles differ from checked-in source');
       reports.push({ viewport: label, url: liveUrl, http: 200, verdict: 'pass',
-                     sourceHeroMatchesDeployed: audit.headingText === sourceHero.replace(/\s+/g, ''),
+                     sourceHeroMatchesDeployed: audit.headingText.replace(/\s+/g, '') === sourceHero.replace(/\s+/g, ''),
                      screenshot: label + '.png', ...audit });
       await local.close();
       await page.close();
