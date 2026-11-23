@@ -50,6 +50,7 @@ The offline runner synthesizes answers from reference data. Its scores **do not 
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env        # add OPENAI_API_KEY
+set -a; source .env; set +a  # export credentials for this shell (trusted local file only)
 ```
 
 ### Run the dashboard
@@ -62,7 +63,7 @@ streamlit run dashboard.py
 pytest -v
 ```
 
-### Live evaluation (not yet enabled)
+### Live evaluation (intentionally disabled until retrieval evidence is available)
 ```bash
 export POLICYMIND_URL=http://localhost:8000
 export FLOWAGENT_URL=http://localhost:8001
