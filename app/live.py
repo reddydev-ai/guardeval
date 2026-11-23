@@ -48,6 +48,8 @@ def verify_evidence(body: dict, case: dict, *, require_llm: bool) -> dict:
         raise AssertionError("Unverifiable generation mode")
     if require_llm and mode != "llm":
         raise AssertionError("LLM quality run cannot use extractive demo responses")
+    if not require_llm and mode != "extractive-demo":
+        raise AssertionError("Smoke mode requires extractive-demo responses; an LLM run must be explicitly selected")
 
     answer = body.get("answer")
     if not isinstance(answer, dict) or not isinstance(answer.get("answer"), str):
@@ -78,6 +80,8 @@ def verify_evidence(body: dict, case: dict, *, require_llm: bool) -> dict:
     # Lightweight exact-answer assertion for synthetic corpus. Judge-based
     # quality scoring is independently required in LLM quality mode.
     response_text = answer["answer"]
+    if f"[{SOURCE_FILENAME} p.{case['page']}]" not in response_text:
+        raise AssertionError(f"Answer is missing the expected inline source citation: {case['id']}")
     exact_answer = normalize(case["reference"]) in normalize(response_text)
     if not exact_answer and not require_llm:
         raise AssertionError(f"Extractive demo did not return expected reference: {case['id']}")
@@ -115,7 +119,10 @@ def run_live() -> dict:
     if policy_key == eval_key or flow_key == reviewer_key:
         raise RuntimeError("Business and evaluation/reviewer credentials must be independent")
 
-    require_llm = os.getenv("EVAL_REQUIRE_LLM", "false").lower() == "true"
+    mode_setting = os.getenv("EVAL_REQUIRE_LLM", "false").strip().lower()
+    if mode_setting not in {"true", "false"}:
+        raise RuntimeError("EVAL_REQUIRE_LLM must be exactly true or false")
+    require_llm = mode_setting == "true"
     if require_llm and not os.getenv("OPENAI_API_KEY"):
         raise RuntimeError("LLM quality gate requires a judge model API key")
 
@@ -185,6 +192,7 @@ def run_live() -> dict:
         # Never accept a heuristic or silent library fallback in model-quality
         # mode. Require engines that actually evaluated live model outputs.
         from .evaluators import run_ragas, run_deepeval_hallucination
+        from .quality_gate import validate_quality_scores
         rag_samples = [{
             "question": r["question"],
             "response": r["response"],
@@ -192,18 +200,12 @@ def run_live() -> dict:
             "ground_truth": r["reference"],
         } for r in rag_results]
         scores = run_ragas(rag_samples)
-        if scores.get("engine") != "ragas":
-            raise RuntimeError("Model quality gate requires RAGAS; no fallback permitted")
         hallucination = run_deepeval_hallucination([{
             "question": r["question"], "response": r["response"], "contexts": r["contexts"]
         } for r in rag_results])
-        if hallucination.get("engine") != "deepeval":
-            raise RuntimeError("Model quality gate requires DeepEval; no fallback permitted")
-        if not (
-            scores["faithfulness"] >= 0.70 and scores["answer_relevancy"] >= 0.70
-            and scores["context_precision"] >= 0.60 and hallucination["hallucination"] <= 0.30
-        ):
-            raise AssertionError("LLM evaluation fell below configured minimum thresholds")
+        # Reject misleading fallback engines, missing cases, invalid scores,
+        # and anything below the configured model-quality thresholds.
+        validate_quality_scores(scores, hallucination, len(rag_results))
         report["rag"]["ragas"] = scores
         report["rag"]["deepeval"] = hallucination
         report["validation_level"] = "synthetic-corpus-live-llm-and-judge"
