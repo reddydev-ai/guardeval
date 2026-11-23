@@ -1,5 +1,8 @@
 # GuardEval — Verifiable RAG and Agent Workflow Evaluation
 
+> **Product-management portfolio brief:** [Problem, users, success metrics, roadmap and limitations](docs/PRODUCT_CASE_STUDY.md). This is an independent prototype; no employer or customer outcome is claimed.
+
+
 GuardEval is an open-source portfolio project for evaluating [PolicyMind](https://github.com/reddydev-ai/policymind) (policy-document RAG) and [FlowAgent](https://github.com/reddydev-ai/flowagent) (human-reviewed vendor verification).
 
 **Current verified capability:** An automated, reproducible *real-service integration gate* using a dedicated synthetic corpus. The workflow starts both real APIs, ingests a PDF into Qdrant, tests the retrieved evidence and citations, and exercises LangGraph approvals. No production data or paid LLM credentials are used in default CI.
