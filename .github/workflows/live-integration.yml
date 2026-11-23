@@ -96,7 +96,8 @@ jobs:
       - name: Run GuardEval real-service integration gate
         working-directory: guardeval
         run: |
-          python -m pytest -q tests/test_live_validators.py
+          python -m compileall -q app scripts tests
+          python -m pytest -q tests/test_live_validators.py tests/test_quality_gate.py
           python -m app.live
 
       - name: Upload redacted summary (no documents or secrets)

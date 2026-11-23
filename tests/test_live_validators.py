@@ -13,7 +13,7 @@ def example():
         "evidence_origin": "same-invocation-retrieval",
         "generation_mode": "extractive-demo",
         "answer": {
-            "answer": "Mistral policy says the ceiling is 42 CAD.",
+            "answer": f"Mistral policy says the ceiling is 42 CAD. [{SOURCE_FILENAME} p.1]",
             "citations": [{"source": SOURCE_FILENAME, "page": 1}],
         },
         "retrieved_contexts": [
@@ -66,6 +66,38 @@ def test_service_endpoints_are_local_by_default(monkeypatch, unsafe):
 def test_pdf_line_wrapping_does_not_hide_correct_evidence():
     body, case = example()
     body["retrieved_contexts"][0]["text"] = "Mistral reimburses 42\nCAD per day"
-    body["answer"]["answer"] = "Reimbursement: 42\nCAD."
+    body["answer"]["answer"] = f"Reimbursement: 42\nCAD. [{SOURCE_FILENAME} p.1]"
     out = verify_evidence(body, case, require_llm=False)
     assert out["reference_in_answer"]
+
+
+def test_inline_citation_is_required_even_with_correct_metadata():
+    body, case = example()
+    body["answer"]["answer"] = "The reimbursement ceiling is 42 CAD."
+    with pytest.raises(AssertionError, match="inline"):
+        verify_evidence(body, case, require_llm=False)
+
+
+def test_llm_output_cannot_pass_no_key_smoke_mode():
+    body, case = example()
+    body["generation_mode"] = "llm"
+    with pytest.raises(AssertionError, match="Smoke mode"):
+        verify_evidence(body, case, require_llm=False)
+
+
+def test_remote_https_requires_explicit_hostname_allowlist(monkeypatch):
+    monkeypatch.setenv("POLICYMIND_URL", "https://evaluation.example.com")
+    monkeypatch.setenv("ALLOW_REMOTE_EVAL", "true")
+    monkeypatch.delenv("EVAL_ALLOWED_HOSTS", raising=False)
+    with pytest.raises(RuntimeError, match="allowlist"):
+        _service_url("POLICYMIND_URL")
+    monkeypatch.setenv("EVAL_ALLOWED_HOSTS", "other.example.com,evaluation.example.com")
+    assert _service_url("POLICYMIND_URL") == "https://evaluation.example.com"
+
+
+def test_remote_evaluation_rejects_http_even_when_allowlisted(monkeypatch):
+    monkeypatch.setenv("POLICYMIND_URL", "http://evaluation.example.com")
+    monkeypatch.setenv("ALLOW_REMOTE_EVAL", "true")
+    monkeypatch.setenv("EVAL_ALLOWED_HOSTS", "evaluation.example.com")
+    with pytest.raises(RuntimeError, match="HTTPS"):
+        _service_url("POLICYMIND_URL")

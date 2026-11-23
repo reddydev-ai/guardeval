@@ -18,7 +18,7 @@ from urllib.parse import urlsplit
 
 import httpx
 
-from .live_fixtures import FLOW_CASES, RAG_CASES, SOURCE_FILENAME
+from .live_fixtures import FLOW_CASES, RAG_CASES, SOURCE_FILENAME, REQUIRED_DOCUMENTS
 
 
 def _service_url(name: str) -> str:
@@ -27,8 +27,17 @@ def _service_url(name: str) -> str:
     if not u.scheme or not u.hostname or u.username or u.password or u.query or u.fragment:
         raise RuntimeError(f"{name} must be a valid service base URL without credentials or query")
     local = u.hostname in {"127.0.0.1", "localhost"}
-    if not ((local and u.scheme == "http") or (u.scheme == "https" and os.getenv("ALLOW_REMOTE_EVAL") == "true")):
-        raise RuntimeError(f"{name} must be local HTTP, or an explicitly permitted HTTPS endpoint")
+    if local and u.scheme == "http":
+        return value
+    if u.scheme != "https" or os.getenv("ALLOW_REMOTE_EVAL") != "true":
+        raise RuntimeError(f"{name} must be local HTTP, or explicitly enabled remote HTTPS")
+    allowlist = {
+        host.strip().casefold()
+        for host in os.getenv("EVAL_ALLOWED_HOSTS", "").split(",")
+        if host.strip()
+    }
+    if u.hostname.casefold() not in allowlist:
+        raise RuntimeError(f"{name} host is not on the explicit evaluation allowlist")
     return value
 
 
@@ -48,6 +57,8 @@ def verify_evidence(body: dict, case: dict, *, require_llm: bool) -> dict:
         raise AssertionError("Unverifiable generation mode")
     if require_llm and mode != "llm":
         raise AssertionError("LLM quality run cannot use extractive demo responses")
+    if not require_llm and mode != "extractive-demo":
+        raise AssertionError("Smoke mode requires extractive-demo responses; an LLM run must be explicitly selected")
 
     answer = body.get("answer")
     if not isinstance(answer, dict) or not isinstance(answer.get("answer"), str):
@@ -78,6 +89,8 @@ def verify_evidence(body: dict, case: dict, *, require_llm: bool) -> dict:
     # Lightweight exact-answer assertion for synthetic corpus. Judge-based
     # quality scoring is independently required in LLM quality mode.
     response_text = answer["answer"]
+    if f"[{SOURCE_FILENAME} p.{case['page']}]" not in response_text:
+        raise AssertionError(f"Answer is missing the expected inline source citation: {case['id']}")
     exact_answer = normalize(case["reference"]) in normalize(response_text)
     if not exact_answer and not require_llm:
         raise AssertionError(f"Extractive demo did not return expected reference: {case['id']}")
@@ -112,10 +125,13 @@ def run_live() -> dict:
     eval_key = _secret("POLICYMIND_EVAL_KEY")
     flow_key = _secret("FLOWAGENT_API_KEY")
     reviewer_key = _secret("FLOWAGENT_REVIEWER_KEY")
-    if policy_key == eval_key or flow_key == reviewer_key:
-        raise RuntimeError("Business and evaluation/reviewer credentials must be independent")
+    if len({policy_key, eval_key, flow_key, reviewer_key}) != 4:
+        raise RuntimeError("All four service and reviewer credentials must be independent")
 
-    require_llm = os.getenv("EVAL_REQUIRE_LLM", "false").lower() == "true"
+    mode_setting = os.getenv("EVAL_REQUIRE_LLM", "false").strip().lower()
+    if mode_setting not in {"true", "false"}:
+        raise RuntimeError("EVAL_REQUIRE_LLM must be exactly true or false")
+    require_llm = mode_setting == "true"
     if require_llm and not os.getenv("OPENAI_API_KEY"):
         raise RuntimeError("LLM quality gate requires a judge model API key")
 
@@ -143,23 +159,52 @@ def run_live() -> dict:
             )
             rag_results.append(verify_evidence(body, case, require_llm=require_llm))
 
+        denied_start = client.post(
+            flow_url + "/verify", headers={"X-API-Key": "intentionally-incorrect"},
+            json={"vendor_name": "Synthetic Unauthorized Request", "submitted_docs": []},
+        )
+        if denied_start.status_code != 401:
+            raise AssertionError("FlowAgent accepted an unauthorized start")
+
         flow_results = []
         for case in FLOW_CASES:
             started = _request(client, "POST", flow_url + "/verify", headers=flow_headers,
                                json={"vendor_name": case["vendor_name"], "submitted_docs": case["submitted_docs"]})
             if started.get("status") != "awaiting_approval" or not started.get("thread_id"):
                 raise AssertionError("FlowAgent did not pause for approval")
-            if started.get("approval_request", {}).get("risk_level") != case["expected_risk"]:
+            request_risk = started.get("approval_request", {})
+            if request_risk.get("risk_level") != case["expected_risk"]:
                 raise AssertionError(f"Incorrect pre-approval risk: {case['id']}")
+            expected_missing = set(REQUIRED_DOCUMENTS) - set(case["submitted_docs"])
+            if set(request_risk.get("missing_docs") or []) != expected_missing:
+                raise AssertionError(f"Incorrect missing-document evidence: {case['id']}")
+            payload = {"thread_id": started["thread_id"], "decision": case["decision"],
+                       "comment": "synthetic evaluation"}
+            reviewer_denied = client.post(
+                flow_url + "/verify/resume", headers={**flow_headers, "X-Reviewer-Key": "intentionally-incorrect"},
+                json=payload,
+            )
+            if reviewer_denied.status_code != 403:
+                raise AssertionError("FlowAgent accepted an unauthorized reviewer")
             finished = _request(
                 client, "POST", flow_url + "/verify/resume", headers=approval_headers,
-                json={"thread_id": started["thread_id"], "decision": case["decision"], "comment": "synthetic evaluation"},
+                json=payload,
             )
             if finished.get("status") != "done" or finished.get("decision") != case["decision"]:
                 raise AssertionError(f"Reviewer decision was not preserved: {case['id']}")
             if finished.get("risk_level") != case["expected_risk"] or not finished.get("memo"):
                 raise AssertionError(f"Incorrect final risk or missing memo: {case['id']}")
-            flow_results.append({"case_id": case["id"], "risk_matches": True, "approval_preserved": True})
+            if set(finished.get("missing_docs") or []) != expected_missing:
+                raise AssertionError(f"Final missing documents do not match: {case['id']}")
+            replay = client.post(
+                flow_url + "/verify/resume", headers=approval_headers, json=payload,
+            )
+            if replay.status_code != 409:
+                raise AssertionError("FlowAgent permitted an approval replay")
+            flow_results.append({
+                "case_id": case["id"], "risk_matches": True, "approval_preserved": True,
+                "missing_documents_match": True, "replay_rejected": True,
+            })
 
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -177,6 +222,8 @@ def run_live() -> dict:
             "n_cases": len(flow_results),
             "risk_accuracy": sum(x["risk_matches"] for x in flow_results) / len(flow_results),
             "approval_integrity": sum(x["approval_preserved"] for x in flow_results) / len(flow_results),
+            "missing_documents_match_rate": sum(x["missing_documents_match"] for x in flow_results) / len(flow_results),
+            "replay_rejection_rate": sum(x["replay_rejected"] for x in flow_results) / len(flow_results),
             "case_ids": [x["case_id"] for x in flow_results],
         },
         "release_quality_certified": False,
@@ -185,6 +232,7 @@ def run_live() -> dict:
         # Never accept a heuristic or silent library fallback in model-quality
         # mode. Require engines that actually evaluated live model outputs.
         from .evaluators import run_ragas, run_deepeval_hallucination
+        from .quality_gate import validate_quality_scores
         rag_samples = [{
             "question": r["question"],
             "response": r["response"],
@@ -192,18 +240,12 @@ def run_live() -> dict:
             "ground_truth": r["reference"],
         } for r in rag_results]
         scores = run_ragas(rag_samples)
-        if scores.get("engine") != "ragas":
-            raise RuntimeError("Model quality gate requires RAGAS; no fallback permitted")
         hallucination = run_deepeval_hallucination([{
             "question": r["question"], "response": r["response"], "contexts": r["contexts"]
         } for r in rag_results])
-        if hallucination.get("engine") != "deepeval":
-            raise RuntimeError("Model quality gate requires DeepEval; no fallback permitted")
-        if not (
-            scores["faithfulness"] >= 0.70 and scores["answer_relevancy"] >= 0.70
-            and scores["context_precision"] >= 0.60 and hallucination["hallucination"] <= 0.30
-        ):
-            raise AssertionError("LLM evaluation fell below configured minimum thresholds")
+        # Reject misleading fallback engines, missing cases, invalid scores,
+        # and anything below the configured model-quality thresholds.
+        validate_quality_scores(scores, hallucination, len(rag_results))
         report["rag"]["ragas"] = scores
         report["rag"]["deepeval"] = hallucination
         report["validation_level"] = "synthetic-corpus-live-llm-and-judge"
