@@ -231,7 +231,7 @@ def run_live() -> dict:
     if require_llm:
         # Never accept a heuristic or silent library fallback in model-quality
         # mode. Require engines that actually evaluated live model outputs.
-        from .evaluators import run_ragas, run_deepeval_hallucination
+        from .evaluators import run_ragas_strict, run_deepeval_hallucination
         from .quality_gate import validate_quality_scores
         rag_samples = [{
             "question": r["question"],
@@ -239,7 +239,7 @@ def run_live() -> dict:
             "retrieved_contexts": r["contexts"],
             "ground_truth": r["reference"],
         } for r in rag_results]
-        scores = run_ragas(rag_samples)
+        scores = run_ragas_strict(rag_samples)
         hallucination = run_deepeval_hallucination([{
             "question": r["question"], "response": r["response"], "contexts": r["contexts"]
         } for r in rag_results])
