@@ -28,7 +28,7 @@ def seed() -> None:
         with fitz.open() as pdf:
             for paragraph in PAGES:
                 page = pdf.new_page(width=595, height=842)
-                page.insert_text((50, 70), paragraph, fontsize=10)
+                page.insert_textbox(fitz.Rect(50, 70, 545, 260), paragraph, fontsize=11)
             pdf.save(path)
         with httpx.Client(timeout=180) as client:
             with path.open("rb") as stream:
