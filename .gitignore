@@ -6,3 +6,5 @@ qdrant_data/
 results.json
 .DS_Store
 *.egg-info/
+
+live-evaluation-report.json

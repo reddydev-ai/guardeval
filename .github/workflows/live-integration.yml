@@ -1,0 +1,109 @@
+name: Live Service Synthetic Corpus Integration
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cross-repo-live-service:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      OPENAI_API_KEY: ""
+      TAVILY_API_KEY: ""
+      DATABASE_URL: ""
+      POLICYMIND_API_KEY: "ci-policy-demo-key"
+      POLICYMIND_EVAL_KEY: "ci-separate-eval-demo-key"
+      POLICYMIND_ENABLE_EVAL_API: "true"
+      POLICYMIND_URL: "http://127.0.0.1:8000"
+      FLOWAGENT_API_KEY: "ci-flow-demo-key"
+      FLOWAGENT_REVIEWER_KEY: "ci-separate-reviewer-demo-key"
+      FLOWAGENT_URL: "http://127.0.0.1:8001"
+      MIN_CONTEXT_SCORE: "0"
+      EVAL_REQUIRE_LLM: "false"
+      QDRANT_PATH: "/tmp/guardeval-ci-qdrant"
+      LIVE_EVAL_REPORT: "live-evaluation-report.json"
+      PYTHONPATH: "."
+
+    steps:
+      - name: Checkout GuardEval
+        uses: actions/checkout@v4
+        with:
+          path: guardeval
+          persist-credentials: false
+
+      - name: Checkout PolicyMind merged main
+        uses: actions/checkout@v4
+        with:
+          repository: reddydev-ai/policymind
+          ref: main
+          path: policymind
+          persist-credentials: false
+
+      - name: Checkout FlowAgent main
+        uses: actions/checkout@v4
+        with:
+          repository: reddydev-ai/flowagent
+          ref: main
+          path: flowagent
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install isolated, compatible runtime environments
+        run: |
+          python -m pip install "pytest==8.3.4" "httpx==0.28.1" "pymupdf==1.25.1"
+          python -m venv .policymind-venv
+          .policymind-venv/bin/python -m pip install \
+            "fastapi==0.115.6" "uvicorn==0.34.0" "python-multipart==0.0.20" "pydantic==2.13.4" \
+            "qdrant-client==1.12.2" "pymupdf==1.25.1" \
+            "langchain-text-splitters==0.3.11" "langchain-core==0.3.79"
+          python -m venv .flowagent-venv
+          .flowagent-venv/bin/python -m pip install \
+            "fastapi==0.115.6" "uvicorn==0.34.0" "pydantic==2.13.4" \
+            "langgraph==1.2.6"
+
+      - name: Start isolated real APIs
+        shell: bash
+        run: |
+          set -euo pipefail
+          (cd policymind && ../.policymind-venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 > "$GITHUB_WORKSPACE/policymind.log" 2>&1 &)
+          (cd flowagent && ../.flowagent-venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8001 > "$GITHUB_WORKSPACE/flowagent.log" 2>&1 &)
+          for port in 8000 8001; do
+            ready=0
+            for attempt in $(seq 1 45); do
+              if curl --silent --fail "http://127.0.0.1:$port/health" >/dev/null; then ready=1; break; fi
+              sleep 2
+            done
+            if [ "$ready" != "1" ]; then
+              echo "Service on port $port failed health readiness"
+              exit 1
+            fi
+          done
+
+      - name: Ingest independent synthetic PDF into real Qdrant
+        working-directory: guardeval
+        run: python -m scripts.seed_live
+
+      - name: Run GuardEval real-service integration gate
+        working-directory: guardeval
+        run: |
+          python -m pytest -q tests/test_live_validators.py
+          python -m app.live
+
+      - name: Upload redacted summary (no documents or secrets)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: synthetic-live-service-results
+          path: guardeval/live-evaluation-report.json
+          if-no-files-found: ignore
+          retention-days: 7
