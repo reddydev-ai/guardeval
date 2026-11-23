@@ -10,10 +10,10 @@ settings = get_settings()
 
 st.set_page_config(page_title="GuardEval", page_icon="🧪", layout="wide")
 st.title("🧪 GuardEval — LLM Evaluation & Guardrails")
-st.caption("Evaluates PolicyMind (RAG) and FlowAgent (agent) before release.")
+st.caption("Synthetic evaluation harness for PolicyMind and FlowAgent; not a live release gate.")
 
 if st.button("Run evaluation", type="primary"):
-    with st.spinner("Running RAGAS + DeepEval + regression checks..."):
+    with st.spinner("Running synthetic evaluation smoke checks..."):
         st.session_state.report = run_all()
 
 report = st.session_state.get("report")
